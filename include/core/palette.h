@@ -30,6 +30,10 @@ public:
     ImU32       color(int idx) const;
     const char* name(int idx)  const;
 
+    // Find the palette index whose colour is closest to (r, g, b).
+    // Skips index 0 (Empty). Returns 1..size()-1.
+    int matchNearest(int r, int g, int b) const;
+
 private:
     std::vector<PaletteEntry> entries_;
 

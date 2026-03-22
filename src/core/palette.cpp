@@ -4,6 +4,7 @@
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include <algorithm>
+#include <climits>
 
 using json = nlohmann::json;
 
@@ -98,4 +99,29 @@ ImU32 Palette::color(int idx) const {
 const char* Palette::name(int idx) const {
     if (idx < 0 || idx >= static_cast<int>(entries_.size())) return entries_[0].name.c_str();
     return entries_[idx].name.c_str();
+}
+
+int Palette::matchNearest(int r, int g, int b) const {
+    int bestIdx = 1; // default to first non-empty colour
+    int bestDist = INT_MAX;
+
+    // Start from 1 to skip "Empty"
+    for (int i = 1; i < static_cast<int>(entries_.size()); ++i) {
+        ImU32 c = entries_[i].color;
+        int pr = static_cast<int>((c >> IM_COL32_R_SHIFT) & 0xFF);
+        int pg = static_cast<int>((c >> IM_COL32_G_SHIFT) & 0xFF);
+        int pb = static_cast<int>((c >> IM_COL32_B_SHIFT) & 0xFF);
+
+        // Squared Euclidean distance in RGB space
+        int dr = r - pr;
+        int dg = g - pg;
+        int db = b - pb;
+        int dist = dr * dr + dg * dg + db * db;
+
+        if (dist < bestDist) {
+            bestDist = dist;
+            bestIdx  = i;
+        }
+    }
+    return bestIdx;
 }

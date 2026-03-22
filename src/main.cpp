@@ -5,6 +5,7 @@
 #include "logging/spdlog_logger.h"
 #include "core/bead_grid.h"
 #include "core/palette.h"
+#include "core/image_importer.h"
 #include "rendering/grid_renderer.h"
 
 #include <imgui.h>
@@ -62,6 +63,11 @@ int main(int /*argc*/, char* /*argv*/[]) {
     int selectedColor = 1; // current palette index for painting (default: Black)
     bool viewCentred = false;
 
+    // ── Image import state ────────────────────────────────────────────────────
+    char importPath[512] = "";
+    int  importWidth = 29;
+    std::string importStatus;
+
     LOG_INFO("Main", "Perler Bead Simulator started");
 
     // ── Main loop ─────────────────────────────────────────────────────────────
@@ -77,6 +83,37 @@ int main(int /*argc*/, char* /*argv*/[]) {
         {
             ImGui::Begin("Controls");
             ImGui::Text("FPS: %.1f (%.2f ms)", io.Framerate, 1000.0f / io.Framerate);
+
+            // ── Import image ──────────────────────────────────────────────────
+            ImGui::Separator();
+            ImGui::Text("Import Image");
+            ImGui::InputText("File Path", importPath, sizeof(importPath));
+            ImGui::SliderInt("Width (beads)", &importWidth, 1, 256);
+
+            if (ImGui::Button("Import")) {
+                std::string filePath(importPath);
+                if (!filePath.empty()) {
+                    auto result = ImageImporter::import(filePath, importWidth,
+                                                        palette, beadGrid);
+                    importStatus = result.message;
+                    if (result.success) {
+                        gridCols = beadGrid.cols();
+                        gridRows = beadGrid.rows();
+                        viewCentred = false; // re-centre view for new grid
+                    }
+                } else {
+                    importStatus = "Please enter a file path";
+                }
+            }
+            ImGui::SameLine();
+            ImGui::TextDisabled("(?)");
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("Supports PNG, JPG, BMP, TGA, GIF, PSD, HDR, PIC");
+            }
+
+            if (!importStatus.empty()) {
+                ImGui::TextWrapped("%s", importStatus.c_str());
+            }
 
             // ── Grid size ─────────────────────────────────────────────────────
             ImGui::Separator();
@@ -164,6 +201,7 @@ int main(int /*argc*/, char* /*argv*/[]) {
             ImGui::BulletText("Left-click / drag: Paint bead");
             ImGui::BulletText("Scroll: Zoom in/out");
             ImGui::BulletText("Right / Middle drag: Pan");
+            ImGui::BulletText("Import: Load image into grid");
 
             ImGui::End();
         }
