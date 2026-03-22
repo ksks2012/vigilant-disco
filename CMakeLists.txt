@@ -28,10 +28,14 @@ file(GLOB IMGUI_SOURCES ${IMGUI_INCLUDE_DIRS}/*.cpp)
 # nlohmann/json (header-only, lives under lib/)
 set(NLOHMANN_JSON_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/lib)
 
+# stb (header-only image loading)
+set(STB_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/lib/stb)
+
 include_directories(
     ${SPDLOG_INCLUDE_DIRS}
     ${IMGUI_INCLUDE_DIRS}
     ${NLOHMANN_JSON_INCLUDE_DIRS}
+    ${STB_INCLUDE_DIRS}
 )
 
 # ── Source files ───────────────────────────────────────────────────────────────
