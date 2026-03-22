@@ -1,73 +1,60 @@
-#include <cstdio>
-#include <cstdlib>
+#include "app/window.h"
+#include "app/config.h"
+#include "logging/logger.h"
+#include "logging/spdlog_logger.h"
 
-#include <GLFW/glfw3.h>
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 
-// GLFW error callback
-static void glfw_error_callback(int error, const char* description)
-{
-    std::fprintf(stderr, "GLFW Error %d: %s\n", error, description);
-}
+#include <memory>
+#include <string>
 
-int main()
-{
-    // --- GLFW initialisation ---
-    glfwSetErrorCallback(glfw_error_callback);
-    if (!glfwInit())
-    {
-        std::fprintf(stderr, "Failed to initialise GLFW\n");
-        return EXIT_FAILURE;
+int main(int /*argc*/, char* /*argv*/[]) {
+    // ── Logger setup ──────────────────────────────────────────────────────────
+    auto logger = std::make_shared<SpdlogLogger>();
+    GlobalLogger::set(logger);
+
+    // ── Config ────────────────────────────────────────────────────────────────
+    Config config;
+    try {
+        config.loadFromFile("etc/config.json");
+    } catch (const ConfigError& e) {
+        LOG_ERROR("Main", std::string("Config error: ") + e.what());
+        return 1;
     }
 
-    // OpenGL 3.3 Core
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
+    LogLevel logLevel = static_cast<LogLevel>(config.logger_level);
+    logger->set_level(logLevel);
 
-    // --- Create window ---
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "Pin - Perler Bead Simulator", nullptr, nullptr);
-    if (!window)
-    {
-        std::fprintf(stderr, "Failed to create GLFW window\n");
-        glfwTerminate();
-        return EXIT_FAILURE;
-    }
-    glfwMakeContextCurrent(window);
-    glfwSwapInterval(1); // enable vsync
+    // ── Window + OpenGL context ───────────────────────────────────────────────
+    Window window(config.window.title, config.window.width, config.window.height);
 
-    // --- ImGui context ---
+    // ── ImGui setup ───────────────────────────────────────────────────────────
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-
     ImGui::StyleColorsDark();
 
-    // --- Platform / Renderer backends ---
-    const char* glsl_version = "#version 130";
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init(glsl_version);
+    ImGui_ImplGlfw_InitForOpenGL(window.getHandle(), true);
+    ImGui_ImplOpenGL3_Init("#version 130");
 
     // Background clear colour (soft light grey)
     ImVec4 clear_color = ImVec4(0.90f, 0.90f, 0.92f, 1.00f);
 
-    // --- Main loop ---
-    while (!glfwWindowShouldClose(window))
-    {
-        glfwPollEvents();
+    LOG_INFO("Main", "Perler Bead Simulator started");
+
+    // ── Main loop ─────────────────────────────────────────────────────────────
+    while (!window.shouldClose()) {
+        window.pollEvents();
 
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        // --- Demo: simple status window ---
+        // ── Info panel ────────────────────────────────────────────────────────
         {
             ImGui::Begin("Pin - Perler Bead Simulator");
             ImGui::Text("Welcome! The rendering loop is running.");
@@ -76,25 +63,21 @@ int main()
             ImGui::End();
         }
 
-        // Render
+        // ── Render ────────────────────────────────────────────────────────────
         ImGui::Render();
-        int display_w, display_h;
-        glfwGetFramebufferSize(window, &display_w, &display_h);
-        glViewport(0, 0, display_w, display_h);
+        glViewport(0, 0, window.getWidth(), window.getHeight());
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        glfwSwapBuffers(window);
+        window.swapBuffers();
     }
 
-    // --- Cleanup ---
+    // ── Cleanup ───────────────────────────────────────────────────────────────
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 
-    glfwDestroyWindow(window);
-    glfwTerminate();
-
-    return EXIT_SUCCESS;
+    LOG_INFO("Main", "Shutdown complete");
+    return 0;
 }
