@@ -1,7 +1,9 @@
 #include "app/window.h"
 #include "app/config.h"
+#include "app/canvas.h"
 #include "logging/logger.h"
 #include "logging/spdlog_logger.h"
+#include "rendering/grid_renderer.h"
 
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -43,6 +45,16 @@ int main(int /*argc*/, char* /*argv*/[]) {
     // Background clear colour (soft light grey)
     ImVec4 clear_color = ImVec4(0.90f, 0.90f, 0.92f, 1.00f);
 
+    // ── Grid & Canvas ─────────────────────────────────────────────────────────
+    Canvas canvas;
+    GridRenderer grid;
+
+    int gridCols = 29;
+    int gridRows = 29;
+    grid.resize(gridCols, gridRows);
+
+    bool viewCentred = false; // centre view on first frame
+
     LOG_INFO("Main", "Perler Bead Simulator started");
 
     // ── Main loop ─────────────────────────────────────────────────────────────
@@ -54,12 +66,61 @@ int main(int /*argc*/, char* /*argv*/[]) {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        // ── Info panel ────────────────────────────────────────────────────────
+        // ── Control panel ─────────────────────────────────────────────────────
         {
-            ImGui::Begin("Pin - Perler Bead Simulator");
-            ImGui::Text("Welcome! The rendering loop is running.");
-            ImGui::Text("Application average %.1f FPS (%.3f ms/frame)",
-                        io.Framerate, 1000.0f / io.Framerate);
+            ImGui::Begin("Controls");
+            ImGui::Text("FPS: %.1f (%.2f ms)", io.Framerate, 1000.0f / io.Framerate);
+
+            ImGui::Separator();
+            ImGui::Text("Grid Size");
+            bool changed = false;
+            changed |= ImGui::SliderInt("Columns", &gridCols, 1, 100);
+            changed |= ImGui::SliderInt("Rows",    &gridRows, 1, 100);
+            if (changed) {
+                grid.resize(gridCols, gridRows);
+            }
+
+            if (ImGui::Button("Reset View")) {
+                viewCentred = false; // will re-centre next frame
+            }
+
+            ImGui::Separator();
+            ImGui::Text("Zoom: %.1f px/unit", canvas.scale());
+            ImGui::Text("Offset: (%.1f, %.1f)", canvas.offset().x, canvas.offset().y);
+
+            ImGui::Separator();
+            ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "Controls:");
+            ImGui::BulletText("Scroll: Zoom in/out");
+            ImGui::BulletText("Right-click drag: Pan");
+            ImGui::BulletText("Middle-click drag: Pan");
+
+            ImGui::End();
+        }
+
+        // ── Canvas (full remaining area) ──────────────────────────────────────
+        {
+            ImGui::SetNextWindowPos(ImVec2(280, 0), ImGuiCond_FirstUseEver);
+            ImGui::SetNextWindowSize(
+                ImVec2(static_cast<float>(window.getWidth()) - 280.0f,
+                       static_cast<float>(window.getHeight())),
+                ImGuiCond_FirstUseEver);
+
+            ImGui::Begin("Canvas", nullptr,
+                         ImGuiWindowFlags_NoScrollbar |
+                         ImGuiWindowFlags_NoScrollWithMouse);
+
+            if (canvas.begin()) {
+                // Centre the view on the first valid frame
+                if (!viewCentred) {
+                    canvas.centreView(static_cast<float>(grid.cols()),
+                                      static_cast<float>(grid.rows()));
+                    viewCentred = true;
+                }
+
+                grid.draw(canvas);
+                canvas.end();
+            }
+
             ImGui::End();
         }
 
