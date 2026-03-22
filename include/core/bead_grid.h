@@ -5,6 +5,8 @@
 #include <vector>
 #include <cstdint>
 
+#include "core/palette.h"
+
 // Data model for the perler bead grid.
 // Each cell stores a colour index (0 = empty / transparent).
 class BeadGrid {
@@ -29,16 +31,14 @@ public:
     bool inBounds(int col, int row) const;
 
     // ── Palette ───────────────────────────────────────────────────────────────
-    // Index 0 is always "empty" (white / transparent).
-    // Indices 1..paletteSize()-1 are the available bead colours.
-    static int paletteSize();
-    static ImU32 paletteColor(int idx);
-    static const char* paletteName(int idx);
+    void           setPalette(Palette* palette) { palette_ = palette; }
+    const Palette* palette() const { return palette_; }
 
 private:
     int cols_ = 0;
     int rows_ = 0;
     std::vector<uint8_t> cells_; // row-major: cells_[row * cols_ + col]
+    Palette* palette_ = nullptr;
 };
 
 #endif // BEAD_GRID_H

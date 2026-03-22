@@ -3,6 +3,7 @@
 
 #include "app/canvas.h"
 #include "core/bead_grid.h"
+#include "core/palette.h"
 #include <vector>
 #include <cstdint>
 
@@ -12,8 +13,8 @@ class GridRenderer {
 public:
     GridRenderer();
 
-    // Draw the grid onto the given canvas, reading bead colours from the model
-    void draw(Canvas& canvas, const BeadGrid& grid) const;
+    // Draw the grid onto the given canvas, reading bead colours from the palette
+    void draw(Canvas& canvas, const BeadGrid& grid, const Palette& palette) const;
 
 private:
     // Appearance constants (in world units where 1 unit = 1 bead pitch)

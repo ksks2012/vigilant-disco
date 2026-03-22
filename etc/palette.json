@@ -1,0 +1,16 @@
+{
+    "palette": [
+        { "name": "Black",       "color": [  0,   0,   0] },
+        { "name": "White",       "color": [245, 245, 245] },
+        { "name": "Red",         "color": [220,  40,  40] },
+        { "name": "Orange",      "color": [240, 150,  30] },
+        { "name": "Yellow",      "color": [250, 220,  40] },
+        { "name": "Green",       "color": [ 50, 180,  60] },
+        { "name": "Blue",        "color": [ 40, 100, 220] },
+        { "name": "Purple",      "color": [140,  60, 180] },
+        { "name": "Pink",        "color": [240, 130, 170] },
+        { "name": "Brown",       "color": [140,  90,  50] },
+        { "name": "Light Grey",  "color": [190, 190, 190] },
+        { "name": "Dark Grey",   "color": [100, 100, 100] }
+    ]
+}

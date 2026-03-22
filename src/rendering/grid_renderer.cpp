@@ -4,7 +4,7 @@
 
 GridRenderer::GridRenderer() = default;
 
-void GridRenderer::draw(Canvas& canvas, const BeadGrid& grid) const {
+void GridRenderer::draw(Canvas& canvas, const BeadGrid& grid, const Palette& palette) const {
     ImDrawList* dl = canvas.drawList();
     if (!dl) return;
 
@@ -51,9 +51,9 @@ void GridRenderer::draw(Canvas& canvas, const BeadGrid& grid) const {
             float cy = static_cast<float>(row) + 0.5f;
             ImVec2 centre = canvas.worldToScreen(cx, cy);
 
-            // Look up bead colour from the data model
+            // Look up bead colour from the palette
             uint8_t colorIdx = grid.get(col, row);
-            ImU32 fillColor = BeadGrid::paletteColor(colorIdx);
+            ImU32 fillColor = palette.color(colorIdx);
 
             if (drawBeads) {
                 // Outline circle

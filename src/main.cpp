@@ -4,6 +4,7 @@
 #include "logging/logger.h"
 #include "logging/spdlog_logger.h"
 #include "core/bead_grid.h"
+#include "core/palette.h"
 #include "rendering/grid_renderer.h"
 
 #include <imgui.h>
@@ -51,6 +52,8 @@ int main(int /*argc*/, char* /*argv*/[]) {
     Canvas canvas;
     BeadGrid beadGrid;
     GridRenderer gridRenderer;
+    Palette palette;
+    palette.loadFromFile("etc/palette.json");
 
     int gridCols = 29;
     int gridRows = 29;
@@ -96,15 +99,15 @@ int main(int /*argc*/, char* /*argv*/[]) {
             // ── Colour palette ────────────────────────────────────────────────
             ImGui::Separator();
             ImGui::Text("Palette");
-            ImGui::Text("Selected: %s", BeadGrid::paletteName(selectedColor));
+            ImGui::Text("Selected: %s", palette.name(selectedColor));
 
             // Draw palette buttons in a wrapped row
             float buttonSize = 28.0f;
             float panelWidth = ImGui::GetContentRegionAvail().x;
             int buttonsPerRow = std::max(1, static_cast<int>(panelWidth / (buttonSize + 4.0f)));
 
-            for (int i = 0; i < BeadGrid::paletteSize(); ++i) {
-                ImU32 col = BeadGrid::paletteColor(i);
+            for (int i = 0; i < palette.size(); ++i) {
+                ImU32 col = palette.color(i);
                 // Convert ImU32 to ImVec4 using ImGui's built-in conversion
                 ImVec4 colVec = ImGui::ColorConvertU32ToFloat4(col);
 
@@ -116,7 +119,7 @@ int main(int /*argc*/, char* /*argv*/[]) {
                     ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1.0f, 1.0f, 0.0f, 1.0f));
                 }
 
-                if (ImGui::ColorButton(BeadGrid::paletteName(i), colVec,
+                if (ImGui::ColorButton(palette.name(i), colVec,
                                        ImGuiColorEditFlags_NoTooltip,
                                        ImVec2(buttonSize, buttonSize))) {
                     selectedColor = i;
@@ -129,13 +132,13 @@ int main(int /*argc*/, char* /*argv*/[]) {
 
                 // Tooltip on hover
                 if (ImGui::IsItemHovered()) {
-                    ImGui::SetTooltip("%s (index %d)", BeadGrid::paletteName(i), i);
+                    ImGui::SetTooltip("%s (index %d)", palette.name(i), i);
                 }
 
                 ImGui::PopID();
 
                 // Wrap to next row
-                if ((i + 1) % buttonsPerRow != 0 && i + 1 < BeadGrid::paletteSize()) {
+                if ((i + 1) % buttonsPerRow != 0 && i + 1 < palette.size()) {
                     ImGui::SameLine();
                 }
             }
@@ -151,7 +154,7 @@ int main(int /*argc*/, char* /*argv*/[]) {
                 if (beadGrid.inBounds(hoverCol, hoverRow)) {
                     uint8_t ci = beadGrid.get(hoverCol, hoverRow);
                     ImGui::Text("Hover: (%d, %d) = %s", hoverCol, hoverRow,
-                                BeadGrid::paletteName(ci));
+                                palette.name(ci));
                 }
             }
 
@@ -195,7 +198,7 @@ int main(int /*argc*/, char* /*argv*/[]) {
                     }
                 }
 
-                gridRenderer.draw(canvas, beadGrid);
+                gridRenderer.draw(canvas, beadGrid, palette);
                 canvas.end();
             }
 
