@@ -7,6 +7,13 @@
 
 #include "core/palette.h"
 
+// Available editing tools
+enum class Tool {
+    Brush,       // Paint individual beads (size 1–3)
+    Eyedropper,  // Pick colour from the grid
+    FloodFill    // Fill connected region with the selected colour
+};
+
 // Data model for the perler bead grid.
 // Each cell stores a colour index (0 = empty / transparent).
 class BeadGrid {
@@ -23,6 +30,13 @@ public:
     // colour index: 0 = empty, 1..N = palette entry
     uint8_t get(int col, int row) const;
     void    set(int col, int row, uint8_t colorIdx);
+
+    // Paint a square brush of the given radius (1 = single bead, 2 = 3x3, 3 = 5x5)
+    void paintBrush(int col, int row, uint8_t colorIdx, int brushSize);
+
+    // Flood-fill: replace all connected cells of the same colour starting at
+    // (col, row) with newColorIdx. Uses iterative BFS to avoid stack overflow.
+    void floodFill(int col, int row, uint8_t newColorIdx);
 
     // Clear the entire grid (set all to 0 = empty)
     void clear();

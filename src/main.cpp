@@ -63,6 +63,10 @@ int main(int /*argc*/, char* /*argv*/[]) {
     int selectedColor = 1; // current palette index for painting (default: Black)
     bool viewCentred = false;
 
+    // ── Tool state ────────────────────────────────────────────────────────────
+    Tool currentTool = Tool::Brush;
+    int  brushSize   = 1; // 1 = single, 2 = 3x3, 3 = 5x5
+
     // ── Image import state ────────────────────────────────────────────────────
     char importPath[512] = "";
     int  importWidth = 29;
@@ -133,6 +137,38 @@ int main(int /*argc*/, char* /*argv*/[]) {
                 viewCentred = false;
             }
 
+            // ── Tools ─────────────────────────────────────────────────────────
+            ImGui::Separator();
+            ImGui::Text("Tools");
+
+            // Tool selection buttons (highlighted when active)
+            auto toolButton = [&](const char* label, Tool tool) {
+                bool active = (currentTool == tool);
+                if (active) {
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.6f, 1.0f, 1.0f));
+                }
+                if (ImGui::Button(label)) {
+                    currentTool = tool;
+                }
+                if (active) {
+                    ImGui::PopStyleColor();
+                }
+            };
+
+            toolButton("Brush [B]", Tool::Brush);
+            ImGui::SameLine();
+            toolButton("Fill [F]", Tool::FloodFill);
+            ImGui::SameLine();
+            toolButton("Eyedrop [I]", Tool::Eyedropper);
+
+            // Brush size (only relevant for Brush tool)
+            if (currentTool == Tool::Brush) {
+                ImGui::SliderInt("Brush Size", &brushSize, 1, 3);
+                const char* sizeLabels[] = { "", "1x1", "3x3", "5x5" };
+                ImGui::SameLine();
+                ImGui::Text("(%s)", sizeLabels[brushSize]);
+            }
+
             // ── Colour palette ────────────────────────────────────────────────
             ImGui::Separator();
             ImGui::Text("Palette");
@@ -198,9 +234,10 @@ int main(int /*argc*/, char* /*argv*/[]) {
             // ── Help ──────────────────────────────────────────────────────────
             ImGui::Separator();
             ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "Controls:");
-            ImGui::BulletText("Left-click / drag: Paint bead");
+            ImGui::BulletText("Left-click / drag: Use current tool");
             ImGui::BulletText("Scroll: Zoom in/out");
             ImGui::BulletText("Right / Middle drag: Pan");
+            ImGui::BulletText("[B] Brush  [F] Fill  [I] Eyedropper");
             ImGui::BulletText("Import: Load image into grid");
 
             ImGui::End();
@@ -226,13 +263,44 @@ int main(int /*argc*/, char* /*argv*/[]) {
                     viewCentred = true;
                 }
 
-                // ── Mouse picking: paint on click or drag ─────────────────────
+                // ── Keyboard shortcuts for tool switching ─────────────────────
+                if (!io.WantTextInput) {
+                    if (ImGui::IsKeyPressed(ImGuiKey_B)) currentTool = Tool::Brush;
+                    if (ImGui::IsKeyPressed(ImGuiKey_F)) currentTool = Tool::FloodFill;
+                    if (ImGui::IsKeyPressed(ImGuiKey_I)) currentTool = Tool::Eyedropper;
+                }
+
+                // ── Mouse interaction (tool-dependent) ────────────────────────
                 if (canvas.isClicked() || canvas.isDragging()) {
                     ImVec2 mw = canvas.mouseWorldPos();
                     int col = static_cast<int>(std::floor(mw.x));
                     int row = static_cast<int>(std::floor(mw.y));
+
                     if (beadGrid.inBounds(col, row)) {
-                        beadGrid.set(col, row, static_cast<uint8_t>(selectedColor));
+                        switch (currentTool) {
+                        case Tool::Brush:
+                            beadGrid.paintBrush(col, row,
+                                                static_cast<uint8_t>(selectedColor),
+                                                brushSize);
+                            break;
+
+                        case Tool::FloodFill:
+                            // Only fill on click, not drag (to avoid repeated fills)
+                            if (canvas.isClicked()) {
+                                beadGrid.floodFill(col, row,
+                                                   static_cast<uint8_t>(selectedColor));
+                            }
+                            break;
+
+                        case Tool::Eyedropper:
+                            // Pick the colour under the cursor
+                            if (canvas.isClicked()) {
+                                selectedColor = beadGrid.get(col, row);
+                                // Auto-switch back to brush after picking
+                                currentTool = Tool::Brush;
+                            }
+                            break;
+                        }
                     }
                 }
 
