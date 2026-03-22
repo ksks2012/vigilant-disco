@@ -1,43 +1,56 @@
-cmake_minimum_required(VERSION 3.16)
-project(pin LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.10)
+project(PerlerBeadSimulator)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(OpenGL_GL_PREFERENCE GLVND)
+set(CMAKE_C_COMPILER_LAUNCHER ccache)
+set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
 
-# --- GLFW (system-installed) ---
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(GLFW REQUIRED glfw3)
-
-# --- OpenGL ---
 find_package(OpenGL REQUIRED)
+find_package(glfw3 REQUIRED)
 
-# --- Source files ---
-set(IMGUI_DIR ${CMAKE_SOURCE_DIR}/lib/imgui)
+# Output directory
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
-set(IMGUI_SOURCES
-    ${IMGUI_DIR}/imgui.cpp
-    ${IMGUI_DIR}/imgui_draw.cpp
-    ${IMGUI_DIR}/imgui_tables.cpp
-    ${IMGUI_DIR}/imgui_widgets.cpp
-    ${IMGUI_DIR}/imgui_impl_glfw.cpp
-    ${IMGUI_DIR}/imgui_impl_opengl3.cpp
+# ── Include paths ──────────────────────────────────────────────────────────────
+include_directories(${CMAKE_SOURCE_DIR}/include)
+
+# spdlog (header-only)
+set(SPDLOG_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/lib/spdlog/)
+file(GLOB SPDLOG_SOURCES ${SPDLOG_INCLUDE_DIRS}/*.h)
+
+# imgui
+set(IMGUI_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/lib/imgui)
+file(GLOB IMGUI_SOURCES ${IMGUI_INCLUDE_DIRS}/*.cpp)
+
+# nlohmann/json (header-only, lives under lib/)
+set(NLOHMANN_JSON_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/lib)
+
+include_directories(
+    ${SPDLOG_INCLUDE_DIRS}
+    ${IMGUI_INCLUDE_DIRS}
+    ${NLOHMANN_JSON_INCLUDE_DIRS}
 )
 
-add_executable(pin
-    src/main.cpp
+# ── Source files ───────────────────────────────────────────────────────────────
+file(GLOB APP_SOURCES     src/app/*.cpp)
+file(GLOB LOGGING_SOURCES src/logging/*.cpp)
+set(MAIN_SOURCE src/main.cpp)
+
+set(SOURCES
+    ${MAIN_SOURCE}
+    ${APP_SOURCES}
+    ${LOGGING_SOURCES}
     ${IMGUI_SOURCES}
 )
 
-target_include_directories(pin PRIVATE
-    ${IMGUI_DIR}
-    ${CMAKE_SOURCE_DIR}/lib
-    ${GLFW_INCLUDE_DIRS}
+add_executable(${PROJECT_NAME} ${SOURCES})
+
+target_link_libraries(${PROJECT_NAME}
+    ${OPENGL_LIBRARIES}
+    glfw
 )
 
-target_link_libraries(pin PRIVATE
-    ${GLFW_LIBRARIES}
-    OpenGL::GL
-)
-
-target_compile_options(pin PRIVATE ${GLFW_CFLAGS_OTHER})
+install(TARGETS ${PROJECT_NAME} DESTINATION bin)
