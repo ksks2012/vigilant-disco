@@ -23,6 +23,23 @@ bool Canvas::begin(const char* label) {
 
     drawList_ = ImGui::GetWindowDrawList();
 
+    // ── Track mouse world position ────────────────────────────────────────────
+    hovered_ = isHovered;
+    if (isHovered) {
+        ImVec2 ms = ImGui::GetIO().MousePos;
+        mouseWorld_ = screenToWorld(ms.x, ms.y);
+    }
+
+    // ── Left-click detection (single click, not drag) ─────────────────────────
+    clicked_ = false;
+    leftDragging_ = false;
+    if (isHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+        clicked_ = true;
+    }
+    if (isActive && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 2.0f)) {
+        leftDragging_ = true;
+    }
+
     // ── Pan (middle-click or right-click drag) ────────────────────────────────
     if (isActive && (ImGui::IsMouseDragging(ImGuiMouseButton_Middle, 0.0f) ||
                      ImGui::IsMouseDragging(ImGuiMouseButton_Right, 0.0f))) {

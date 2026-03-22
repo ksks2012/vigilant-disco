@@ -35,6 +35,16 @@ public:
     // The ImDrawList for the canvas area
     ImDrawList* drawList() const { return drawList_; }
 
+    // ── Input queries (valid after begin()) ───────────────────────────────────
+    // Returns true if the left mouse button was clicked this frame on the canvas
+    bool isClicked() const { return clicked_; }
+    // Returns true if the left mouse button is held and dragging on the canvas
+    bool isDragging() const { return leftDragging_; }
+    // World-space position of the mouse (valid when hovered)
+    ImVec2 mouseWorldPos() const { return mouseWorld_; }
+    // Returns true if the canvas is hovered
+    bool isHovered() const { return hovered_; }
+
     // Zoom limits
     void setZoomRange(float minZoom, float maxZoom) { minZoom_ = minZoom; maxZoom_ = maxZoom; }
 
@@ -56,6 +66,10 @@ private:
 
     // Interaction state
     bool dragging_ = false;
+    bool clicked_  = false;
+    bool leftDragging_ = false;
+    bool hovered_  = false;
+    ImVec2 mouseWorld_ = {0, 0};
 };
 
 #endif // CANVAS_H

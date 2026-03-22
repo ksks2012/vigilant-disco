@@ -3,6 +3,7 @@
 #include "app/canvas.h"
 #include "logging/logger.h"
 #include "logging/spdlog_logger.h"
+#include "core/bead_grid.h"
 #include "rendering/grid_renderer.h"
 
 #include <imgui.h>
@@ -11,6 +12,7 @@
 
 #include <memory>
 #include <string>
+#include <cmath>
 
 int main(int /*argc*/, char* /*argv*/[]) {
     // ── Logger setup ──────────────────────────────────────────────────────────
@@ -45,15 +47,17 @@ int main(int /*argc*/, char* /*argv*/[]) {
     // Background clear colour (soft light grey)
     ImVec4 clear_color = ImVec4(0.90f, 0.90f, 0.92f, 1.00f);
 
-    // ── Grid & Canvas ─────────────────────────────────────────────────────────
+    // ── Grid data & renderer ──────────────────────────────────────────────────
     Canvas canvas;
-    GridRenderer grid;
+    BeadGrid beadGrid;
+    GridRenderer gridRenderer;
 
     int gridCols = 29;
     int gridRows = 29;
-    grid.resize(gridCols, gridRows);
+    beadGrid.resize(gridCols, gridRows);
 
-    bool viewCentred = false; // centre view on first frame
+    int selectedColor = 1; // current palette index for painting (default: Black)
+    bool viewCentred = false;
 
     LOG_INFO("Main", "Perler Bead Simulator started");
 
@@ -71,33 +75,97 @@ int main(int /*argc*/, char* /*argv*/[]) {
             ImGui::Begin("Controls");
             ImGui::Text("FPS: %.1f (%.2f ms)", io.Framerate, 1000.0f / io.Framerate);
 
+            // ── Grid size ─────────────────────────────────────────────────────
             ImGui::Separator();
             ImGui::Text("Grid Size");
-            bool changed = false;
-            changed |= ImGui::SliderInt("Columns", &gridCols, 1, 100);
-            changed |= ImGui::SliderInt("Rows",    &gridRows, 1, 100);
-            if (changed) {
-                grid.resize(gridCols, gridRows);
+            bool sizeChanged = false;
+            sizeChanged |= ImGui::SliderInt("Columns", &gridCols, 1, 100);
+            sizeChanged |= ImGui::SliderInt("Rows",    &gridRows, 1, 100);
+            if (sizeChanged) {
+                beadGrid.resize(gridCols, gridRows);
             }
 
+            if (ImGui::Button("Clear Grid")) {
+                beadGrid.clear();
+            }
+            ImGui::SameLine();
             if (ImGui::Button("Reset View")) {
-                viewCentred = false; // will re-centre next frame
+                viewCentred = false;
             }
 
+            // ── Colour palette ────────────────────────────────────────────────
+            ImGui::Separator();
+            ImGui::Text("Palette");
+            ImGui::Text("Selected: %s", BeadGrid::paletteName(selectedColor));
+
+            // Draw palette buttons in a wrapped row
+            float buttonSize = 28.0f;
+            float panelWidth = ImGui::GetContentRegionAvail().x;
+            int buttonsPerRow = std::max(1, static_cast<int>(panelWidth / (buttonSize + 4.0f)));
+
+            for (int i = 0; i < BeadGrid::paletteSize(); ++i) {
+                ImU32 col = BeadGrid::paletteColor(i);
+                // Convert ImU32 to ImVec4 using ImGui's built-in conversion
+                ImVec4 colVec = ImGui::ColorConvertU32ToFloat4(col);
+
+                ImGui::PushID(i);
+                // Highlight the selected colour
+                bool isSelected = (i == selectedColor);
+                if (isSelected) {
+                    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 3.0f);
+                    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1.0f, 1.0f, 0.0f, 1.0f));
+                }
+
+                if (ImGui::ColorButton(BeadGrid::paletteName(i), colVec,
+                                       ImGuiColorEditFlags_NoTooltip,
+                                       ImVec2(buttonSize, buttonSize))) {
+                    selectedColor = i;
+                }
+
+                if (isSelected) {
+                    ImGui::PopStyleColor();
+                    ImGui::PopStyleVar();
+                }
+
+                // Tooltip on hover
+                if (ImGui::IsItemHovered()) {
+                    ImGui::SetTooltip("%s (index %d)", BeadGrid::paletteName(i), i);
+                }
+
+                ImGui::PopID();
+
+                // Wrap to next row
+                if ((i + 1) % buttonsPerRow != 0 && i + 1 < BeadGrid::paletteSize()) {
+                    ImGui::SameLine();
+                }
+            }
+
+            // ── View info ─────────────────────────────────────────────────────
             ImGui::Separator();
             ImGui::Text("Zoom: %.1f px/unit", canvas.scale());
-            ImGui::Text("Offset: (%.1f, %.1f)", canvas.offset().x, canvas.offset().y);
 
+            if (canvas.isHovered()) {
+                ImVec2 mw = canvas.mouseWorldPos();
+                int hoverCol = static_cast<int>(std::floor(mw.x));
+                int hoverRow = static_cast<int>(std::floor(mw.y));
+                if (beadGrid.inBounds(hoverCol, hoverRow)) {
+                    uint8_t ci = beadGrid.get(hoverCol, hoverRow);
+                    ImGui::Text("Hover: (%d, %d) = %s", hoverCol, hoverRow,
+                                BeadGrid::paletteName(ci));
+                }
+            }
+
+            // ── Help ──────────────────────────────────────────────────────────
             ImGui::Separator();
             ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "Controls:");
+            ImGui::BulletText("Left-click / drag: Paint bead");
             ImGui::BulletText("Scroll: Zoom in/out");
-            ImGui::BulletText("Right-click drag: Pan");
-            ImGui::BulletText("Middle-click drag: Pan");
+            ImGui::BulletText("Right / Middle drag: Pan");
 
             ImGui::End();
         }
 
-        // ── Canvas (full remaining area) ──────────────────────────────────────
+        // ── Canvas ────────────────────────────────────────────────────────────
         {
             ImGui::SetNextWindowPos(ImVec2(280, 0), ImGuiCond_FirstUseEver);
             ImGui::SetNextWindowSize(
@@ -112,12 +180,22 @@ int main(int /*argc*/, char* /*argv*/[]) {
             if (canvas.begin()) {
                 // Centre the view on the first valid frame
                 if (!viewCentred) {
-                    canvas.centreView(static_cast<float>(grid.cols()),
-                                      static_cast<float>(grid.rows()));
+                    canvas.centreView(static_cast<float>(beadGrid.cols()),
+                                      static_cast<float>(beadGrid.rows()));
                     viewCentred = true;
                 }
 
-                grid.draw(canvas);
+                // ── Mouse picking: paint on click or drag ─────────────────────
+                if (canvas.isClicked() || canvas.isDragging()) {
+                    ImVec2 mw = canvas.mouseWorldPos();
+                    int col = static_cast<int>(std::floor(mw.x));
+                    int row = static_cast<int>(std::floor(mw.y));
+                    if (beadGrid.inBounds(col, row)) {
+                        beadGrid.set(col, row, static_cast<uint8_t>(selectedColor));
+                    }
+                }
+
+                gridRenderer.draw(canvas, beadGrid);
                 canvas.end();
             }
 
