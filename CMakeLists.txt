@@ -36,6 +36,7 @@ include_directories(
 
 # ── Source files ───────────────────────────────────────────────────────────────
 file(GLOB APP_SOURCES       src/app/*.cpp)
+file(GLOB CORE_SOURCES      src/core/*.cpp)
 file(GLOB RENDERING_SOURCES src/rendering/*.cpp)
 file(GLOB LOGGING_SOURCES   src/logging/*.cpp)
 set(MAIN_SOURCE src/main.cpp)
@@ -43,6 +44,7 @@ set(MAIN_SOURCE src/main.cpp)
 set(SOURCES
     ${MAIN_SOURCE}
     ${APP_SOURCES}
+    ${CORE_SOURCES}
     ${RENDERING_SOURCES}
     ${LOGGING_SOURCES}
     ${IMGUI_SOURCES}
