@@ -6,6 +6,7 @@
 #include "core/bead_grid.h"
 #include "core/palette.h"
 #include "core/image_importer.h"
+#include "core/undo_manager.h"
 #include "rendering/grid_renderer.h"
 
 #include <imgui.h>
@@ -67,6 +68,10 @@ int main(int /*argc*/, char* /*argv*/[]) {
     Tool currentTool = Tool::Brush;
     int  brushSize   = 1; // 1 = single, 2 = 3x3, 3 = 5x5
 
+    // ── Undo / Redo ──────────────────────────────────────────────────────────
+    UndoManager undoManager(100);
+    bool brushStrokeActive = false; // track brush drag as single undo unit
+
     // ── Image import state ────────────────────────────────────────────────────
     char importPath[512] = "";
     int  importWidth = 29;
@@ -97,6 +102,8 @@ int main(int /*argc*/, char* /*argv*/[]) {
             if (ImGui::Button("Import")) {
                 std::string filePath(importPath);
                 if (!filePath.empty()) {
+                    undoManager.saveSnapshot(beadGrid.cols(), beadGrid.rows(),
+                                             beadGrid.cells());
                     auto result = ImageImporter::import(filePath, importWidth,
                                                         palette, beadGrid);
                     importStatus = result.message;
@@ -104,6 +111,8 @@ int main(int /*argc*/, char* /*argv*/[]) {
                         gridCols = beadGrid.cols();
                         gridRows = beadGrid.rows();
                         viewCentred = false; // re-centre view for new grid
+                        // Import changes grid dimensions, so clear undo history
+                        undoManager.clear();
                     }
                 } else {
                     importStatus = "Please enter a file path";
@@ -127,10 +136,14 @@ int main(int /*argc*/, char* /*argv*/[]) {
             sizeChanged |= ImGui::SliderInt("Rows",    &gridRows, 1, 100);
             if (sizeChanged) {
                 beadGrid.resize(gridCols, gridRows);
+                undoManager.clear(); // dimensions changed, history is invalid
             }
 
             if (ImGui::Button("Clear Grid")) {
+                undoManager.saveSnapshot(beadGrid.cols(), beadGrid.rows(),
+                                         beadGrid.cells());
                 beadGrid.clear();
+                undoManager.discardIfUnchanged(beadGrid.cells());
             }
             ImGui::SameLine();
             if (ImGui::Button("Reset View")) {
@@ -167,6 +180,40 @@ int main(int /*argc*/, char* /*argv*/[]) {
                 const char* sizeLabels[] = { "", "1x1", "3x3", "5x5" };
                 ImGui::SameLine();
                 ImGui::Text("(%s)", sizeLabels[brushSize]);
+            }
+
+            // Undo / Redo buttons
+            {
+                bool canUndo = undoManager.canUndo();
+                bool canRedo = undoManager.canRedo();
+
+                if (!canUndo) ImGui::BeginDisabled();
+                if (ImGui::Button("Undo [Ctrl+Z]")) {
+                    auto snapshot = undoManager.undo(beadGrid.cols(),
+                                                     beadGrid.rows(),
+                                                     beadGrid.cells());
+                    beadGrid.restoreFrom(snapshot.cols, snapshot.rows, snapshot.cells);
+                    gridCols = beadGrid.cols();
+                    gridRows = beadGrid.rows();
+                }
+                if (!canUndo) ImGui::EndDisabled();
+
+                ImGui::SameLine();
+
+                if (!canRedo) ImGui::BeginDisabled();
+                if (ImGui::Button("Redo [Ctrl+Y]")) {
+                    auto snapshot = undoManager.redo(beadGrid.cols(),
+                                                     beadGrid.rows(),
+                                                     beadGrid.cells());
+                    beadGrid.restoreFrom(snapshot.cols, snapshot.rows, snapshot.cells);
+                    gridCols = beadGrid.cols();
+                    gridRows = beadGrid.rows();
+                }
+                if (!canRedo) ImGui::EndDisabled();
+
+                ImGui::SameLine();
+                ImGui::TextDisabled("(%zu / %zu)", undoManager.undoCount(),
+                                    undoManager.redoCount());
             }
 
             // ── Colour palette ────────────────────────────────────────────────
@@ -238,6 +285,7 @@ int main(int /*argc*/, char* /*argv*/[]) {
             ImGui::BulletText("Scroll: Zoom in/out");
             ImGui::BulletText("Right / Middle drag: Pan");
             ImGui::BulletText("[B] Brush  [F] Fill  [I] Eyedropper");
+            ImGui::BulletText("[Ctrl+Z] Undo  [Ctrl+Y] Redo");
             ImGui::BulletText("Import: Load image into grid");
 
             ImGui::End();
@@ -268,6 +316,31 @@ int main(int /*argc*/, char* /*argv*/[]) {
                     if (ImGui::IsKeyPressed(ImGuiKey_B)) currentTool = Tool::Brush;
                     if (ImGui::IsKeyPressed(ImGuiKey_F)) currentTool = Tool::FloodFill;
                     if (ImGui::IsKeyPressed(ImGuiKey_I)) currentTool = Tool::Eyedropper;
+
+                    // Undo: Ctrl+Z
+                    if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Z) &&
+                        !io.KeyShift && undoManager.canUndo()) {
+                        auto snapshot = undoManager.undo(beadGrid.cols(),
+                                                         beadGrid.rows(),
+                                                         beadGrid.cells());
+                        beadGrid.restoreFrom(snapshot.cols, snapshot.rows,
+                                             snapshot.cells);
+                        gridCols = beadGrid.cols();
+                        gridRows = beadGrid.rows();
+                    }
+                    // Redo: Ctrl+Y or Ctrl+Shift+Z
+                    if (io.KeyCtrl &&
+                        (ImGui::IsKeyPressed(ImGuiKey_Y) ||
+                         (io.KeyShift && ImGui::IsKeyPressed(ImGuiKey_Z))) &&
+                        undoManager.canRedo()) {
+                        auto snapshot = undoManager.redo(beadGrid.cols(),
+                                                         beadGrid.rows(),
+                                                         beadGrid.cells());
+                        beadGrid.restoreFrom(snapshot.cols, snapshot.rows,
+                                             snapshot.cells);
+                        gridCols = beadGrid.cols();
+                        gridRows = beadGrid.rows();
+                    }
                 }
 
                 // ── Mouse interaction (tool-dependent) ────────────────────────
@@ -279,6 +352,13 @@ int main(int /*argc*/, char* /*argv*/[]) {
                     if (beadGrid.inBounds(col, row)) {
                         switch (currentTool) {
                         case Tool::Brush:
+                            // Save snapshot at the start of a brush stroke
+                            if (canvas.isClicked() && !brushStrokeActive) {
+                                undoManager.saveSnapshot(beadGrid.cols(),
+                                                         beadGrid.rows(),
+                                                         beadGrid.cells());
+                                brushStrokeActive = true;
+                            }
                             beadGrid.paintBrush(col, row,
                                                 static_cast<uint8_t>(selectedColor),
                                                 brushSize);
@@ -287,13 +367,17 @@ int main(int /*argc*/, char* /*argv*/[]) {
                         case Tool::FloodFill:
                             // Only fill on click, not drag (to avoid repeated fills)
                             if (canvas.isClicked()) {
+                                undoManager.saveSnapshot(beadGrid.cols(),
+                                                         beadGrid.rows(),
+                                                         beadGrid.cells());
                                 beadGrid.floodFill(col, row,
                                                    static_cast<uint8_t>(selectedColor));
+                                undoManager.discardIfUnchanged(beadGrid.cells());
                             }
                             break;
 
                         case Tool::Eyedropper:
-                            // Pick the colour under the cursor
+                            // Pick the colour under the cursor (no undo needed)
                             if (canvas.isClicked()) {
                                 selectedColor = beadGrid.get(col, row);
                                 // Auto-switch back to brush after picking
@@ -302,6 +386,12 @@ int main(int /*argc*/, char* /*argv*/[]) {
                             break;
                         }
                     }
+                }
+
+                // End brush stroke when mouse is released
+                if (brushStrokeActive && !ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
+                    brushStrokeActive = false;
+                    undoManager.discardIfUnchanged(beadGrid.cells());
                 }
 
                 gridRenderer.draw(canvas, beadGrid, palette);

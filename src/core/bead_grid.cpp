@@ -30,6 +30,12 @@ bool BeadGrid::inBounds(int col, int row) const {
     return col >= 0 && col < cols_ && row >= 0 && row < rows_;
 }
 
+void BeadGrid::restoreFrom(int cols, int rows, const std::vector<uint8_t>& cells) {
+    cols_ = cols;
+    rows_ = rows;
+    cells_ = cells;
+}
+
 void BeadGrid::paintBrush(int col, int row, uint8_t colorIdx, int brushSize) {
     // brushSize 1 = single bead, 2 = 3x3, 3 = 5x5
     int radius = brushSize - 1; // 0, 1, or 2

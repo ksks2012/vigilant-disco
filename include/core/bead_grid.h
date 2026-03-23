@@ -44,6 +44,12 @@ public:
     // Check if (col, row) is within bounds
     bool inBounds(int col, int row) const;
 
+    // ── Snapshot support (for undo/redo) ──────────────────────────────────────
+    const std::vector<uint8_t>& cells() const { return cells_; }
+
+    // Restore grid state from a snapshot
+    void restoreFrom(int cols, int rows, const std::vector<uint8_t>& cells);
+
     // ── Palette ───────────────────────────────────────────────────────────────
     void           setPalette(Palette* palette) { palette_ = palette; }
     const Palette* palette() const { return palette_; }
