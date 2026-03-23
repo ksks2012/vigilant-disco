@@ -12,6 +12,7 @@ public:
 private:
     void handleShortcuts(EditorState& state);
     void handleMouseInteraction(EditorState& state);
+    void drawCachedTexture(EditorState& state);
 };
 
 #endif // CANVAS_PANEL_H

@@ -52,6 +52,7 @@ void ControlPanel::drawProjectSection(EditorState& state) {
                 state.selectedColor = 1;
             state.undoManager.clear();
             state.viewCentred = false;
+            state.textureCache.markDirty();
         }
     }
 
@@ -81,6 +82,7 @@ void ControlPanel::drawImportSection(EditorState& state) {
                 state.syncGridDims();
                 state.viewCentred = false;
                 state.undoManager.clear();
+                state.textureCache.markDirty();
             }
         } else {
             state.importStatus = "Please enter a file path";
@@ -142,6 +144,7 @@ void ControlPanel::drawGridSizeSection(EditorState& state) {
     if (sizeChanged) {
         state.beadGrid.resize(state.gridCols, state.gridRows);
         state.undoManager.clear();
+        state.textureCache.markDirty();
     }
 
     if (ImGui::Button("Clear Grid")) {
@@ -150,6 +153,7 @@ void ControlPanel::drawGridSizeSection(EditorState& state) {
                                         state.beadGrid.cells());
         state.beadGrid.clear();
         state.undoManager.discardIfUnchanged(state.beadGrid.cells());
+        state.textureCache.markDirty();
     }
     ImGui::SameLine();
     if (ImGui::Button("Reset View")) {
@@ -203,6 +207,7 @@ void ControlPanel::drawToolsSection(EditorState& state) {
                                                     state.beadGrid.cells());
             state.beadGrid.restoreFrom(snapshot.cols, snapshot.rows, snapshot.cells);
             state.syncGridDims();
+            state.textureCache.markDirty();
         }
         if (!canUndo) ImGui::EndDisabled();
 
@@ -215,6 +220,7 @@ void ControlPanel::drawToolsSection(EditorState& state) {
                                                     state.beadGrid.cells());
             state.beadGrid.restoreFrom(snapshot.cols, snapshot.rows, snapshot.cells);
             state.syncGridDims();
+            state.textureCache.markDirty();
         }
         if (!canRedo) ImGui::EndDisabled();
 

@@ -5,6 +5,7 @@
 #include "core/palette.h"
 #include "core/undo_manager.h"
 #include "rendering/grid_renderer.h"
+#include "rendering/bead_texture_cache.h"
 #include "app/canvas.h"
 
 #include <string>
@@ -13,11 +14,12 @@
 // Owned by main(), passed by reference to panel draw calls.
 struct EditorState {
     // ── Core data ─────────────────────────────────────────────────────────────
-    Canvas       canvas;
-    BeadGrid     beadGrid;
-    GridRenderer gridRenderer;
-    Palette      palette;
-    UndoManager  undoManager{100};
+    Canvas           canvas;
+    BeadGrid         beadGrid;
+    GridRenderer     gridRenderer;
+    BeadTextureCache textureCache;
+    Palette          palette;
+    UndoManager      undoManager{100};
 
     // ── Grid dimensions (kept in sync with beadGrid) ──────────────────────────
     int gridCols = 29;

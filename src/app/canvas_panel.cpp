@@ -30,7 +30,12 @@ void CanvasPanel::draw(EditorState& state, const Window& window) {
         handleShortcuts(state);
         handleMouseInteraction(state);
 
-        state.gridRenderer.draw(state.canvas, state.beadGrid, state.palette);
+        // Update the cached texture (only rebuilds when dirty)
+        state.textureCache.update(state.beadGrid, state.palette);
+
+        // Draw the cached texture via ImGui, mapped to world coordinates
+        drawCachedTexture(state);
+
         state.canvas.end();
     }
 
@@ -66,6 +71,7 @@ void CanvasPanel::handleShortcuts(EditorState& state) {
                 state.selectedColor = 1;
             state.undoManager.clear();
             state.viewCentred = false;
+            state.textureCache.markDirty();
         }
     }
 
@@ -77,6 +83,7 @@ void CanvasPanel::handleShortcuts(EditorState& state) {
                                                state.beadGrid.cells());
         state.beadGrid.restoreFrom(snapshot.cols, snapshot.rows, snapshot.cells);
         state.syncGridDims();
+        state.textureCache.markDirty();
     }
 
     // Redo: Ctrl+Y or Ctrl+Shift+Z
@@ -89,6 +96,7 @@ void CanvasPanel::handleShortcuts(EditorState& state) {
                                                state.beadGrid.cells());
         state.beadGrid.restoreFrom(snapshot.cols, snapshot.rows, snapshot.cells);
         state.syncGridDims();
+        state.textureCache.markDirty();
     }
 }
 
@@ -113,6 +121,7 @@ void CanvasPanel::handleMouseInteraction(EditorState& state) {
                 state.beadGrid.paintBrush(col, row,
                                            static_cast<uint8_t>(state.selectedColor),
                                            state.brushSize);
+                state.textureCache.markDirty();
                 break;
 
             case Tool::FloodFill:
@@ -124,6 +133,7 @@ void CanvasPanel::handleMouseInteraction(EditorState& state) {
                     state.beadGrid.floodFill(col, row,
                                               static_cast<uint8_t>(state.selectedColor));
                     state.undoManager.discardIfUnchanged(state.beadGrid.cells());
+                    state.textureCache.markDirty();
                 }
                 break;
 
@@ -141,5 +151,30 @@ void CanvasPanel::handleMouseInteraction(EditorState& state) {
     if (state.brushStrokeActive && !ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
         state.brushStrokeActive = false;
         state.undoManager.discardIfUnchanged(state.beadGrid.cells());
+    }
+}
+
+// ── Draw cached texture mapped to world coordinates ───────────────────────────
+
+void CanvasPanel::drawCachedTexture(EditorState& state) {
+    GLuint texId = state.textureCache.textureId();
+    if (texId == 0) return;
+
+    // The texture covers world rect (0,0) to (cols, rows)
+    float cols = static_cast<float>(state.textureCache.gridCols());
+    float rows = static_cast<float>(state.textureCache.gridRows());
+
+    // Convert world corners to screen coordinates
+    ImVec2 topLeft  = state.canvas.worldToScreen(0.0f, 0.0f);
+    ImVec2 botRight = state.canvas.worldToScreen(cols, rows);
+
+    // Draw the texture as a quad via the ImGui DrawList
+    ImDrawList* dl = state.canvas.drawList();
+    if (dl) {
+        dl->AddImage(
+            static_cast<ImTextureID>(texId),
+            topLeft, botRight,
+            ImVec2(0.0f, 0.0f),   // UV top-left
+            ImVec2(1.0f, 1.0f));  // UV bottom-right
     }
 }
