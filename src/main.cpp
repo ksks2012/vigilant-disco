@@ -7,6 +7,7 @@
 #include "core/palette.h"
 #include "core/image_importer.h"
 #include "core/undo_manager.h"
+#include "core/project_file.h"
 #include "rendering/grid_renderer.h"
 
 #include <imgui.h>
@@ -77,6 +78,10 @@ int main(int /*argc*/, char* /*argv*/[]) {
     int  importWidth = 29;
     std::string importStatus;
 
+    // ── Project file state ────────────────────────────────────────────────────
+    char projectPath[512] = "project.pin";
+    std::string projectStatus;
+
     LOG_INFO("Main", "Perler Bead Simulator started");
 
     // ── Main loop ─────────────────────────────────────────────────────────────
@@ -92,6 +97,33 @@ int main(int /*argc*/, char* /*argv*/[]) {
         {
             ImGui::Begin("Controls");
             ImGui::Text("FPS: %.1f (%.2f ms)", io.Framerate, 1000.0f / io.Framerate);
+
+            // ── Project file ──────────────────────────────────────────────────
+            ImGui::Separator();
+            ImGui::Text("Project");
+            ImGui::InputText("Project File", projectPath, sizeof(projectPath));
+
+            if (ImGui::Button("Save [Ctrl+S]")) {
+                auto result = ProjectFile::save(projectPath, beadGrid, palette);
+                projectStatus = result.message;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Load [Ctrl+O]")) {
+                auto result = ProjectFile::load(projectPath, beadGrid, palette);
+                projectStatus = result.message;
+                if (result.success) {
+                    gridCols = beadGrid.cols();
+                    gridRows = beadGrid.rows();
+                    // Clamp selected colour to new palette range
+                    if (selectedColor >= palette.size()) selectedColor = 1;
+                    undoManager.clear();
+                    viewCentred = false;
+                }
+            }
+
+            if (!projectStatus.empty()) {
+                ImGui::TextWrapped("%s", projectStatus.c_str());
+            }
 
             // ── Import image ──────────────────────────────────────────────────
             ImGui::Separator();
@@ -286,6 +318,7 @@ int main(int /*argc*/, char* /*argv*/[]) {
             ImGui::BulletText("Right / Middle drag: Pan");
             ImGui::BulletText("[B] Brush  [F] Fill  [I] Eyedropper");
             ImGui::BulletText("[Ctrl+Z] Undo  [Ctrl+Y] Redo");
+            ImGui::BulletText("[Ctrl+S] Save  [Ctrl+O] Load");
             ImGui::BulletText("Import: Load image into grid");
 
             ImGui::End();
@@ -316,6 +349,24 @@ int main(int /*argc*/, char* /*argv*/[]) {
                     if (ImGui::IsKeyPressed(ImGuiKey_B)) currentTool = Tool::Brush;
                     if (ImGui::IsKeyPressed(ImGuiKey_F)) currentTool = Tool::FloodFill;
                     if (ImGui::IsKeyPressed(ImGuiKey_I)) currentTool = Tool::Eyedropper;
+
+                    // Save: Ctrl+S
+                    if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_S)) {
+                        auto result = ProjectFile::save(projectPath, beadGrid, palette);
+                        projectStatus = result.message;
+                    }
+                    // Load: Ctrl+O
+                    if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_O)) {
+                        auto result = ProjectFile::load(projectPath, beadGrid, palette);
+                        projectStatus = result.message;
+                        if (result.success) {
+                            gridCols = beadGrid.cols();
+                            gridRows = beadGrid.rows();
+                            if (selectedColor >= palette.size()) selectedColor = 1;
+                            undoManager.clear();
+                            viewCentred = false;
+                        }
+                    }
 
                     // Undo: Ctrl+Z
                     if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Z) &&

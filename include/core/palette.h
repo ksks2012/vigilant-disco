@@ -34,6 +34,12 @@ public:
     // Skips index 0 (Empty). Returns 1..size()-1.
     int matchNearest(int r, int g, int b) const;
 
+    // Direct access to entries (for serialisation)
+    const std::vector<PaletteEntry>& entries() const { return entries_; }
+
+    // Replace palette entries (used when loading a project file)
+    void setEntries(std::vector<PaletteEntry> entries) { entries_ = std::move(entries); }
+
 private:
     std::vector<PaletteEntry> entries_;
 
