@@ -8,6 +8,7 @@
 #include "core/image_importer.h"
 #include "core/undo_manager.h"
 #include "core/project_file.h"
+#include "core/exporter.h"
 #include "rendering/grid_renderer.h"
 
 #include <imgui.h>
@@ -81,6 +82,12 @@ int main(int /*argc*/, char* /*argv*/[]) {
     // ── Project file state ────────────────────────────────────────────────────
     char projectPath[512] = "project.pin";
     std::string projectStatus;
+
+    // ── Export state ──────────────────────────────────────────────────────────
+    char exportPath[512] = "export.png";
+    int  exportBeadPx = 20;
+    int  exportStyle  = 1;  // 0 = Flat, 1 = Bead
+    std::string exportStatus;
 
     LOG_INFO("Main", "Perler Bead Simulator started");
 
@@ -158,6 +165,38 @@ int main(int /*argc*/, char* /*argv*/[]) {
 
             if (!importStatus.empty()) {
                 ImGui::TextWrapped("%s", importStatus.c_str());
+            }
+
+            // ── Export ────────────────────────────────────────────────────────
+            ImGui::Separator();
+            ImGui::Text("Export");
+            ImGui::InputText("Export Path", exportPath, sizeof(exportPath));
+
+            ImGui::SliderInt("Bead Size (px)", &exportBeadPx, 4, 64);
+            ImGui::Combo("PNG Style", &exportStyle, "Flat (grid)\0Bead (3D)\0");
+
+            if (ImGui::Button("Export PNG")) {
+                PngStyle style = (exportStyle == 0) ? PngStyle::Flat : PngStyle::Bead;
+                auto result = Exporter::exportPng(exportPath, beadGrid, palette,
+                                                   exportBeadPx, style);
+                exportStatus = result.message;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Export CSV")) {
+                // Derive CSV path from export path by replacing extension
+                std::string csvPath(exportPath);
+                auto dotPos = csvPath.rfind('.');
+                if (dotPos != std::string::npos) {
+                    csvPath = csvPath.substr(0, dotPos) + ".csv";
+                } else {
+                    csvPath += ".csv";
+                }
+                auto result = Exporter::exportCsv(csvPath, beadGrid, palette);
+                exportStatus = result.message;
+            }
+
+            if (!exportStatus.empty()) {
+                ImGui::TextWrapped("%s", exportStatus.c_str());
             }
 
             // ── Grid size ─────────────────────────────────────────────────────
