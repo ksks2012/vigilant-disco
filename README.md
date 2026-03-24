@@ -10,6 +10,8 @@ your design as a PNG or CSV bead count sheet.
 
 - **Image Import** — Load PNG / JPG / BMP / TGA and auto-convert to a bead grid with
   nearest-neighbour colour matching
+- **Native File Dialogs** — System-native Open / Save dialogs for importing images,
+  loading / saving projects, and exporting (via tinyfiledialogs)
 - **Editing Tools** — Brush (size 1×1 / 3×3 / 5×5), Flood Fill, Eyedropper
 - **Bresenham Brush Interpolation** — Fast mouse strokes are gap-free thanks to
   line interpolation between frames
@@ -56,12 +58,13 @@ All other dependencies are bundled under `lib/`:
 | [nlohmann/json](https://github.com/nlohmann/json) | JSON parsing |
 | [spdlog](https://github.com/gabime/spdlog) | Logging |
 | [stb_image / stb_image_write](https://github.com/nothings/stb) | Image I/O |
+| [tinyfiledialogs](http://tinyfiledialogs.sourceforge.net) | Native file dialogs |
 
 ## Build & Run
 
 ```bash
 # Install system dependencies (Ubuntu / Debian)
-sudo apt install build-essential cmake libglfw3-dev ccache
+sudo apt install build-essential cmake libglfw3-dev ccache zenity
 
 # Configure and build
 cmake -B build -DCMAKE_BUILD_TYPE=Release
