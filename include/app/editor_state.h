@@ -4,6 +4,7 @@
 #include "core/bead_grid.h"
 #include "core/palette.h"
 #include "core/undo_manager.h"
+#include "core/image_importer.h"
 #include "rendering/grid_renderer.h"
 #include "rendering/bead_texture_cache.h"
 #include "app/canvas.h"
@@ -45,6 +46,7 @@ struct EditorState {
     // ── Image import ──────────────────────────────────────────────────────────
     char        importPath[512] = "";
     int         importWidth     = 29;
+    int         importSampling  = 1;   // 0 = PointSample, 1 = AreaAverage
     std::string importStatus;
 
     // ── Export ─────────────────────────────────────────────────────────────────
