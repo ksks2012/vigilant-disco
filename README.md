@@ -9,7 +9,9 @@ your design as a PNG or CSV bead count sheet.
 ## Features
 
 - **Image Import** — Load PNG / JPG / BMP / TGA and auto-convert to a bead grid with
-  nearest-neighbour colour matching
+  nearest-neighbour colour matching. Two down-sampling algorithms are available:
+  - **Point Sample** — Takes the centre pixel of each source region (fast)
+  - **Area Average** — Averages all pixels in the source region (better detail retention)
 - **Native File Dialogs** — System-native Open / Save dialogs for importing images,
   loading / saving projects, and exporting (via tinyfiledialogs)
 - **Editing Tools** — Brush (size 1×1 / 3×3 / 5×5), Flood Fill, Eyedropper
@@ -26,6 +28,8 @@ your design as a PNG or CSV bead count sheet.
   only rebuilt when data changes, keeping idle / zoom / pan at minimal cost
 
 ![Export preview — PNG with 3D bead style](img/export.png)
+
+![Area Average import — better detail retention when down-sampling](img/area_average.png)
 
 ## Keyboard Shortcuts
 
