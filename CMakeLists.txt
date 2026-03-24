@@ -31,11 +31,16 @@ set(NLOHMANN_JSON_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/lib)
 # stb (header-only image loading)
 set(STB_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/lib/stb)
 
+# tinyfiledialogs (single .c/.h, native file dialogs)
+set(TINYFD_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/lib/tinyfiledialogs)
+set(TINYFD_SOURCES ${TINYFD_INCLUDE_DIRS}/tinyfiledialogs.c)
+
 include_directories(
     ${SPDLOG_INCLUDE_DIRS}
     ${IMGUI_INCLUDE_DIRS}
     ${NLOHMANN_JSON_INCLUDE_DIRS}
     ${STB_INCLUDE_DIRS}
+    ${TINYFD_INCLUDE_DIRS}
 )
 
 # ── Source files ───────────────────────────────────────────────────────────────
@@ -52,6 +57,7 @@ set(SOURCES
     ${RENDERING_SOURCES}
     ${LOGGING_SOURCES}
     ${IMGUI_SOURCES}
+    ${TINYFD_SOURCES}
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
