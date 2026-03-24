@@ -12,7 +12,8 @@ ImportResult ImageImporter::import(const std::string& path,
                                    int targetCols,
                                    const Palette& palette,
                                    BeadGrid& outGrid,
-                                   SamplingMethod sampling) {
+                                   SamplingMethod sampling,
+                                   ColorMatchMethod colorMatch) {
     ImportResult result;
 
     // ── Load image ────────────────────────────────────────────────────────────
@@ -80,7 +81,7 @@ ImportResult ImageImporter::import(const std::string& path,
                 b = data[idx + 2];
             }
 
-            uint8_t colorIdx = static_cast<uint8_t>(palette.matchNearest(r, g, b));
+            uint8_t colorIdx = static_cast<uint8_t>(palette.matchNearest(r, g, b, colorMatch));
             outGrid.set(col, row, colorIdx);
         }
     }

@@ -93,6 +93,8 @@ void ControlPanel::drawImportSection(EditorState& state) {
     ImGui::SliderInt("Width (beads)", &state.importWidth, 1, 256);
     ImGui::Combo("Sampling", &state.importSampling,
                  "Point Sample\0Area Average\0");
+    ImGui::Combo("Color Match", &state.importColorMatch,
+                 "Euclidean RGB\0Redmean\0");
 
     if (ImGui::Button("Import")) {
         std::string filePath(state.importPath);
@@ -100,12 +102,15 @@ void ControlPanel::drawImportSection(EditorState& state) {
             SamplingMethod method = (state.importSampling == 0)
                 ? SamplingMethod::PointSample
                 : SamplingMethod::AreaAverage;
+            ColorMatchMethod cmMethod = (state.importColorMatch == 0)
+                ? ColorMatchMethod::EuclideanRGB
+                : ColorMatchMethod::Redmean;
             state.undoManager.saveSnapshot(state.beadGrid.cols(),
                                             state.beadGrid.rows(),
                                             state.beadGrid.cells());
             auto result = ImageImporter::import(filePath, state.importWidth,
                                                  state.palette, state.beadGrid,
-                                                 method);
+                                                 method, cmMethod);
             state.importStatus = result.message;
             if (result.success) {
                 state.syncGridDims();

@@ -101,7 +101,7 @@ const char* Palette::name(int idx) const {
     return entries_[idx].name.c_str();
 }
 
-int Palette::matchNearest(int r, int g, int b) const {
+int Palette::matchNearest(int r, int g, int b, ColorMatchMethod method) const {
     int bestIdx = 1; // default to first non-empty colour
     int bestDist = INT_MAX;
 
@@ -112,11 +112,23 @@ int Palette::matchNearest(int r, int g, int b) const {
         int pg = static_cast<int>((c >> IM_COL32_G_SHIFT) & 0xFF);
         int pb = static_cast<int>((c >> IM_COL32_B_SHIFT) & 0xFF);
 
-        // Squared Euclidean distance in RGB space
         int dr = r - pr;
         int dg = g - pg;
         int db = b - pb;
-        int dist = dr * dr + dg * dg + db * db;
+
+        int dist;
+        if (method == ColorMatchMethod::Redmean) {
+            // Perceptually weighted distance (redmean approximation):
+            // (2 + r̄/256)·ΔR² + 4·ΔG² + (2 + (255-r̄)/256)·ΔB²
+            // Multiply everything by 256 to stay in integer arithmetic.
+            int rMean = (r + pr) / 2;
+            dist = (512 + rMean) * dr * dr
+                 + 1024 * dg * dg
+                 + (512 + (255 - rMean)) * db * db;
+        } else {
+            // Standard squared Euclidean distance in RGB space
+            dist = dr * dr + dg * dg + db * db;
+        }
 
         if (dist < bestDist) {
             bestDist = dist;

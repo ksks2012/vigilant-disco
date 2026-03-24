@@ -37,7 +37,8 @@ public:
                                int targetCols,
                                const Palette& palette,
                                BeadGrid& outGrid,
-                               SamplingMethod sampling = SamplingMethod::AreaAverage);
+                               SamplingMethod sampling = SamplingMethod::AreaAverage,
+                               ColorMatchMethod colorMatch = ColorMatchMethod::EuclideanRGB);
 };
 
 #endif // IMAGE_IMPORTER_H

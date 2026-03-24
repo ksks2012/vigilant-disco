@@ -46,7 +46,8 @@ struct EditorState {
     // ── Image import ──────────────────────────────────────────────────────────
     char        importPath[512] = "";
     int         importWidth     = 29;
-    int         importSampling  = 1;   // 0 = PointSample, 1 = AreaAverage
+    int         importSampling    = 1;   // 0 = PointSample, 1 = AreaAverage
+    int         importColorMatch  = 0;   // 0 = EuclideanRGB, 1 = Redmean
     std::string importStatus;
 
     // ── Export ─────────────────────────────────────────────────────────────────
