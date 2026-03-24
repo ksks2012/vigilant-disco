@@ -1,5 +1,6 @@
 #include "app/control_panel.h"
 #include "app/editor_state.h"
+#include "app/file_dialog.h"
 #include "core/project_file.h"
 #include "core/image_importer.h"
 #include "core/exporter.h"
@@ -7,6 +8,7 @@
 #include <imgui.h>
 #include <cmath>
 #include <string>
+#include <cstring>
 #include <algorithm>
 
 // ── Main draw ─────────────────────────────────────────────────────────────────
@@ -35,6 +37,16 @@ void ControlPanel::drawProjectSection(EditorState& state) {
     ImGui::Separator();
     ImGui::Text("Project");
     ImGui::InputText("Project File", state.projectPath, sizeof(state.projectPath));
+    ImGui::SameLine();
+    if (ImGui::Button("...##project")) {
+        char const* filter[1] = {"*.pin"};
+        std::string path = FileDialog::openFile(
+            "Select Project File", state.projectPath, 1, filter, "Pin files");
+        if (!path.empty()) {
+            std::strncpy(state.projectPath, path.c_str(), sizeof(state.projectPath) - 1);
+            state.projectPath[sizeof(state.projectPath) - 1] = '\0';
+        }
+    }
 
     if (ImGui::Button("Save [Ctrl+S]")) {
         auto result = ProjectFile::save(state.projectPath, state.beadGrid,
@@ -67,6 +79,17 @@ void ControlPanel::drawImportSection(EditorState& state) {
     ImGui::Separator();
     ImGui::Text("Import Image");
     ImGui::InputText("File Path", state.importPath, sizeof(state.importPath));
+    ImGui::SameLine();
+    if (ImGui::Button("...##import")) {
+        char const* filters[8] = {
+            "*.png","*.jpg","*.jpeg","*.bmp","*.tga","*.gif","*.psd","*.hdr"};
+        std::string path = FileDialog::openFile(
+            "Select Image", state.importPath, 8, filters, "Image files");
+        if (!path.empty()) {
+            std::strncpy(state.importPath, path.c_str(), sizeof(state.importPath) - 1);
+            state.importPath[sizeof(state.importPath) - 1] = '\0';
+        }
+    }
     ImGui::SliderInt("Width (beads)", &state.importWidth, 1, 256);
 
     if (ImGui::Button("Import")) {
@@ -105,6 +128,16 @@ void ControlPanel::drawExportSection(EditorState& state) {
     ImGui::Separator();
     ImGui::Text("Export");
     ImGui::InputText("Export Path", state.exportPath, sizeof(state.exportPath));
+    ImGui::SameLine();
+    if (ImGui::Button("...##export")) {
+        char const* filter[1] = {"*.png"};
+        std::string path = FileDialog::saveFile(
+            "Export As", state.exportPath, 1, filter, "PNG files");
+        if (!path.empty()) {
+            std::strncpy(state.exportPath, path.c_str(), sizeof(state.exportPath) - 1);
+            state.exportPath[sizeof(state.exportPath) - 1] = '\0';
+        }
+    }
     ImGui::SliderInt("Bead Size (px)", &state.exportBeadPx, 4, 64);
     ImGui::Combo("PNG Style", &state.exportStyle, "Flat (grid)\0Bead (3D)\0");
 

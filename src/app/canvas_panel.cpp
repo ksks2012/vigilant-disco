@@ -1,11 +1,13 @@
 #include "app/canvas_panel.h"
 #include "app/editor_state.h"
+#include "app/file_dialog.h"
 #include "app/window.h"
 #include "core/project_file.h"
 
 #include <imgui.h>
 #include <cmath>
 #include <cstdlib> // std::abs
+#include <cstring>
 
 // ── Main draw ─────────────────────────────────────────────────────────────────
 
@@ -56,23 +58,37 @@ void CanvasPanel::handleShortcuts(EditorState& state) {
 
     // Save: Ctrl+S
     if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_S)) {
-        auto result = ProjectFile::save(state.projectPath, state.beadGrid,
-                                         state.palette);
-        state.projectStatus = result.message;
+        char const* filter[1] = {"*.pin"};
+        std::string path = FileDialog::saveFile(
+            "Save Project", state.projectPath, 1, filter, "Pin files");
+        if (!path.empty()) {
+            std::strncpy(state.projectPath, path.c_str(), sizeof(state.projectPath) - 1);
+            state.projectPath[sizeof(state.projectPath) - 1] = '\0';
+            auto result = ProjectFile::save(state.projectPath, state.beadGrid,
+                                             state.palette);
+            state.projectStatus = result.message;
+        }
     }
 
     // Load: Ctrl+O
     if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_O)) {
-        auto result = ProjectFile::load(state.projectPath, state.beadGrid,
-                                         state.palette);
-        state.projectStatus = result.message;
-        if (result.success) {
-            state.syncGridDims();
-            if (state.selectedColor >= state.palette.size())
-                state.selectedColor = 1;
-            state.undoManager.clear();
-            state.viewCentred = false;
-            state.textureCache.markDirty();
+        char const* filter[1] = {"*.pin"};
+        std::string path = FileDialog::openFile(
+            "Open Project", state.projectPath, 1, filter, "Pin files");
+        if (!path.empty()) {
+            std::strncpy(state.projectPath, path.c_str(), sizeof(state.projectPath) - 1);
+            state.projectPath[sizeof(state.projectPath) - 1] = '\0';
+            auto result = ProjectFile::load(state.projectPath, state.beadGrid,
+                                             state.palette);
+            state.projectStatus = result.message;
+            if (result.success) {
+                state.syncGridDims();
+                if (state.selectedColor >= state.palette.size())
+                    state.selectedColor = 1;
+                state.undoManager.clear();
+                state.viewCentred = false;
+                state.textureCache.markDirty();
+            }
         }
     }
 
