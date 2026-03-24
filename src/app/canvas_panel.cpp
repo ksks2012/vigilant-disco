@@ -5,6 +5,7 @@
 
 #include <imgui.h>
 #include <cmath>
+#include <cstdlib> // std::abs
 
 // ── Main draw ─────────────────────────────────────────────────────────────────
 
@@ -117,10 +118,40 @@ void CanvasPanel::handleMouseInteraction(EditorState& state) {
                                                     state.beadGrid.rows(),
                                                     state.beadGrid.cells());
                     state.brushStrokeActive = true;
+                    state.lastBrushCol = -1;
+                    state.lastBrushRow = -1;
                 }
-                state.beadGrid.paintBrush(col, row,
-                                           static_cast<uint8_t>(state.selectedColor),
-                                           state.brushSize);
+
+                // Bresenham interpolation between last and current position
+                if (state.brushStrokeActive &&
+                    state.lastBrushCol >= 0 && state.lastBrushRow >= 0 &&
+                    (col != state.lastBrushCol || row != state.lastBrushRow)) {
+                    // Walk from (lastCol, lastRow) to (col, row)
+                    int x0 = state.lastBrushCol, y0 = state.lastBrushRow;
+                    int x1 = col,                y1 = row;
+                    int dx = std::abs(x1 - x0);
+                    int dy = -std::abs(y1 - y0);
+                    int sx = (x0 < x1) ? 1 : -1;
+                    int sy = (y0 < y1) ? 1 : -1;
+                    int err = dx + dy;
+
+                    // Skip the starting point (already painted last frame)
+                    while (x0 != x1 || y0 != y1) {
+                        int e2 = 2 * err;
+                        if (e2 >= dy) { err += dy; x0 += sx; }
+                        if (e2 <= dx) { err += dx; y0 += sy; }
+                        state.beadGrid.paintBrush(x0, y0,
+                                                   static_cast<uint8_t>(state.selectedColor),
+                                                   state.brushSize);
+                    }
+                } else {
+                    state.beadGrid.paintBrush(col, row,
+                                               static_cast<uint8_t>(state.selectedColor),
+                                               state.brushSize);
+                }
+
+                state.lastBrushCol = col;
+                state.lastBrushRow = row;
                 state.textureCache.markDirty();
                 break;
 
@@ -150,6 +181,8 @@ void CanvasPanel::handleMouseInteraction(EditorState& state) {
     // End brush stroke when mouse is released
     if (state.brushStrokeActive && !ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
         state.brushStrokeActive = false;
+        state.lastBrushCol = -1;
+        state.lastBrushRow = -1;
         state.undoManager.discardIfUnchanged(state.beadGrid.cells());
     }
 }

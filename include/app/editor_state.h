@@ -35,6 +35,8 @@ struct EditorState {
 
     // ── Brush stroke tracking (for single-undo-per-drag) ──────────────────────
     bool brushStrokeActive = false;
+    int  lastBrushCol = -1;   // previous frame brush position for interpolation
+    int  lastBrushRow = -1;
 
     // ── Project file ──────────────────────────────────────────────────────────
     char        projectPath[512] = "project.pin";
