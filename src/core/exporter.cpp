@@ -232,8 +232,8 @@ ExportResult Exporter::exportCsv(const std::string& path,
              << count << "\n";
     }
 
-    // Summary row
-    file << ",Total,,," << totalBeads << "\n";
+    // Summary row (6 fields to match header: Index,Name,R,G,B,Count)
+    file << ",Total,,,," << totalBeads << "\n";
 
     result.success = true;
     result.message = "Exported " + std::to_string(counts.size()) + " colours (" +
