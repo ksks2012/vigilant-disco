@@ -12,19 +12,19 @@ using json = nlohmann::json;
 
 void Palette::loadDefaults() {
     entries_.clear();
-    entries_.push_back({ "Empty",       IM_COL32(255, 255, 255, 255) });
-    entries_.push_back({ "Black",       IM_COL32(  0,   0,   0, 255) });
-    entries_.push_back({ "White",       IM_COL32(245, 245, 245, 255) });
-    entries_.push_back({ "Red",         IM_COL32(220,  40,  40, 255) });
-    entries_.push_back({ "Orange",      IM_COL32(240, 150,  30, 255) });
-    entries_.push_back({ "Yellow",      IM_COL32(250, 220,  40, 255) });
-    entries_.push_back({ "Green",       IM_COL32( 50, 180,  60, 255) });
-    entries_.push_back({ "Blue",        IM_COL32( 40, 100, 220, 255) });
-    entries_.push_back({ "Purple",      IM_COL32(140,  60, 180, 255) });
-    entries_.push_back({ "Pink",        IM_COL32(240, 130, 170, 255) });
-    entries_.push_back({ "Brown",       IM_COL32(140,  90,  50, 255) });
-    entries_.push_back({ "Light Grey",  IM_COL32(190, 190, 190, 255) });
-    entries_.push_back({ "Dark Grey",   IM_COL32(100, 100, 100, 255) });
+    entries_.push_back({ "Empty",       "", IM_COL32(255, 255, 255, 255) });
+    entries_.push_back({ "Black",       "", IM_COL32(  0,   0,   0, 255) });
+    entries_.push_back({ "White",       "", IM_COL32(245, 245, 245, 255) });
+    entries_.push_back({ "Red",         "", IM_COL32(220,  40,  40, 255) });
+    entries_.push_back({ "Orange",      "", IM_COL32(240, 150,  30, 255) });
+    entries_.push_back({ "Yellow",      "", IM_COL32(250, 220,  40, 255) });
+    entries_.push_back({ "Green",       "", IM_COL32( 50, 180,  60, 255) });
+    entries_.push_back({ "Blue",        "", IM_COL32( 40, 100, 220, 255) });
+    entries_.push_back({ "Purple",      "", IM_COL32(140,  60, 180, 255) });
+    entries_.push_back({ "Pink",        "", IM_COL32(240, 130, 170, 255) });
+    entries_.push_back({ "Brown",       "", IM_COL32(140,  90,  50, 255) });
+    entries_.push_back({ "Light Grey",  "", IM_COL32(190, 190, 190, 255) });
+    entries_.push_back({ "Dark Grey",   "", IM_COL32(100, 100, 100, 255) });
 }
 
 Palette::Palette() {
@@ -56,7 +56,7 @@ void Palette::loadFromFile(const std::string& path) {
     std::vector<PaletteEntry> loaded;
 
     // Index 0 is always Empty (not overridable)
-    loaded.push_back({ "Empty", IM_COL32(255, 255, 255, 255) });
+    loaded.push_back({ "Empty", "", IM_COL32(255, 255, 255, 255) });
 
     for (const auto& entry : j["palette"]) {
         if (!entry.contains("name") || !entry.contains("color")) {
@@ -65,6 +65,10 @@ void Palette::loadFromFile(const std::string& path) {
         }
 
         std::string name = entry["name"].get<std::string>();
+        std::string code;
+        if (entry.contains("code") && entry["code"].is_string()) {
+            code = entry["code"].get<std::string>();
+        }
 
         // Parse colour: expect [R, G, B] array with values 0-255
         if (!entry["color"].is_array() || entry["color"].size() < 3) {
@@ -76,7 +80,7 @@ void Palette::loadFromFile(const std::string& path) {
         int g = std::clamp(entry["color"][1].get<int>(), 0, 255);
         int b = std::clamp(entry["color"][2].get<int>(), 0, 255);
 
-        loaded.push_back({ name, IM_COL32(r, g, b, 255) });
+        loaded.push_back({ name, code, IM_COL32(r, g, b, 255) });
     }
 
     if (loaded.size() <= 1) {
@@ -99,6 +103,11 @@ ImU32 Palette::color(int idx) const {
 const char* Palette::name(int idx) const {
     if (idx < 0 || idx >= static_cast<int>(entries_.size())) return entries_[0].name.c_str();
     return entries_[idx].name.c_str();
+}
+
+const char* Palette::code(int idx) const {
+    if (idx < 0 || idx >= static_cast<int>(entries_.size())) return "";
+    return entries_[idx].code.c_str();
 }
 
 int Palette::matchNearest(int r, int g, int b, ColorMatchMethod method) const {

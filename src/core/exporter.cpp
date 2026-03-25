@@ -218,7 +218,7 @@ ExportResult Exporter::exportCsv(const std::string& path,
     }
 
     // Header
-    file << "Index,Name,R,G,B,Count\n";
+    file << "Index,Code,Name,R,G,B,Count\n";
 
     for (const auto& [idx, count] : counts) {
         ImU32 c = palette.color(idx);
@@ -227,13 +227,14 @@ ExportResult Exporter::exportCsv(const std::string& path,
         int b = static_cast<int>((c >> IM_COL32_B_SHIFT) & 0xFF);
 
         file << idx << ","
+             << palette.code(idx) << ","
              << palette.name(idx) << ","
              << r << "," << g << "," << b << ","
              << count << "\n";
     }
 
-    // Summary row (6 fields to match header: Index,Name,R,G,B,Count)
-    file << ",Total,,,," << totalBeads << "\n";
+    // Summary row (7 fields to match header: Index,Code,Name,R,G,B,Count)
+    file << ",,Total,,,," << totalBeads << "\n";
 
     result.success = true;
     result.message = "Exported " + std::to_string(counts.size()) + " colours (" +

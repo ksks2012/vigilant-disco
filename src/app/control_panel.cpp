@@ -279,6 +279,31 @@ void ControlPanel::drawToolsSection(EditorState& state) {
 void ControlPanel::drawPaletteSection(EditorState& state) {
     ImGui::Separator();
     ImGui::Text("Palette");
+
+    // ── Brand / file selector ─────────────────────────────────────────────────
+    if (!state.paletteFiles.empty()) {
+        // Build a combo label from the current selection
+        const char* preview = state.paletteFiles[state.paletteFileIndex].label.c_str();
+        if (ImGui::BeginCombo("Brand", preview)) {
+            for (int i = 0; i < static_cast<int>(state.paletteFiles.size()); ++i) {
+                bool selected = (i == state.paletteFileIndex);
+                if (ImGui::Selectable(state.paletteFiles[i].label.c_str(), selected)) {
+                    if (i != state.paletteFileIndex) {
+                        state.paletteFileIndex = i;
+                        state.palette.loadFromFile(state.paletteFiles[i].path);
+                        // Clamp selected colour to the new palette size
+                        if (state.selectedColor >= state.palette.size()) {
+                            state.selectedColor = std::min(1, state.palette.size() - 1);
+                        }
+                        state.textureCache.markDirty();
+                    }
+                }
+                if (selected) ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+    }
+
     ImGui::Text("Selected: %s", state.palette.name(state.selectedColor));
 
     float buttonSize = 28.0f;

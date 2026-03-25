@@ -40,7 +40,11 @@ ProjectFileResult ProjectFile::save(const std::string& path,
         int r = static_cast<int>((e.color >> IM_COL32_R_SHIFT) & 0xFF);
         int g = static_cast<int>((e.color >> IM_COL32_G_SHIFT) & 0xFF);
         int b = static_cast<int>((e.color >> IM_COL32_B_SHIFT) & 0xFF);
-        jPalette.push_back({ {"name", e.name}, {"color", {r, g, b}} });
+        json je = { {"name", e.name}, {"color", {r, g, b}} };
+        if (!e.code.empty()) {
+            je["code"] = e.code;
+        }
+        jPalette.push_back(je);
     }
     j["palette"] = jPalette;
 
@@ -105,18 +109,22 @@ ProjectFileResult ProjectFile::load(const std::string& path,
     }
 
     std::vector<PaletteEntry> entries;
-    entries.push_back({ "Empty", IM_COL32(255, 255, 255, 255) }); // index 0
+    entries.push_back({ "Empty", "", IM_COL32(255, 255, 255, 255) }); // index 0
 
     for (const auto& entry : j["palette"]) {
         if (!entry.contains("name") || !entry.contains("color")) continue;
 
         std::string name = entry["name"].get<std::string>();
+        std::string code;
+        if (entry.contains("code") && entry["code"].is_string()) {
+            code = entry["code"].get<std::string>();
+        }
         if (!entry["color"].is_array() || entry["color"].size() < 3) continue;
 
         int r = std::clamp(entry["color"][0].get<int>(), 0, 255);
         int g = std::clamp(entry["color"][1].get<int>(), 0, 255);
         int b = std::clamp(entry["color"][2].get<int>(), 0, 255);
-        entries.push_back({ name, IM_COL32(r, g, b, 255) });
+        entries.push_back({ name, code, IM_COL32(r, g, b, 255) });
     }
 
     if (entries.size() <= 1) {

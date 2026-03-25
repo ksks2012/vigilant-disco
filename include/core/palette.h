@@ -5,10 +5,11 @@
 #include <string>
 #include <vector>
 
-// A single palette entry: a named colour.
+// A single palette entry: a named colour with an optional product code.
 struct PaletteEntry {
     std::string name;
-    ImU32       color; // packed RGBA via IM_COL32
+    std::string code;   // manufacturer code, e.g. "H01", "P05"
+    ImU32       color;  // packed RGBA via IM_COL32
 };
 
 // Colour-matching algorithm for palette look-up.
@@ -35,6 +36,7 @@ public:
     // Access by index (out-of-range returns entry 0)
     ImU32       color(int idx) const;
     const char* name(int idx)  const;
+    const char* code(int idx)  const;
 
     // Find the palette index whose colour is closest to (r, g, b).
     // Skips index 0 (Empty). Returns 1..size()-1.

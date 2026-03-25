@@ -10,8 +10,12 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
+#include <nlohmann/json.hpp>
+#include <filesystem>
+#include <fstream>
 #include <memory>
 #include <string>
+#include <algorithm>
 
 int main(int /*argc*/, char* /*argv*/[]) {
     // ── Logger setup ──────────────────────────────────────────────────────────
@@ -51,7 +55,53 @@ int main(int /*argc*/, char* /*argv*/[]) {
     ControlPanel controlPanel;
     CanvasPanel  canvasPanel;
 
-    state.palette.loadFromFile("etc/palette.json");
+    // ── Discover palette files in etc/palettes/ ───────────────────────────────
+    {
+        namespace fs = std::filesystem;
+        const std::string palettesDir = "etc/palettes";
+        if (fs::is_directory(palettesDir)) {
+            for (const auto& entry : fs::directory_iterator(palettesDir)) {
+                if (entry.path().extension() == ".json") {
+                    // Try to read the "brand" field for the display label
+                    std::string label = entry.path().stem().string();
+                    try {
+                        std::ifstream f(entry.path());
+                        auto j = nlohmann::json::parse(f);
+                        if (j.contains("brand") && j["brand"].is_string()) {
+                            label = j["brand"].get<std::string>();
+                        }
+                        if (j.contains("size") && j["size"].is_string()) {
+                            label += " — " + j["size"].get<std::string>();
+                        }
+                        if (j.contains("palette") && j["palette"].is_array()) {
+                            label += " (" + std::to_string(j["palette"].size()) + ")";
+                        }
+                    } catch (...) {
+                        // Fall back to filename-based label
+                    }
+                    state.paletteFiles.push_back({ label, entry.path().string() });
+                }
+            }
+            // Sort alphabetically by label for consistent order
+            std::sort(state.paletteFiles.begin(), state.paletteFiles.end(),
+                      [](const PaletteFileEntry& a, const PaletteFileEntry& b) {
+                          return a.label < b.label;
+                      });
+        }
+
+        // Fallback: legacy etc/palette.json
+        if (state.paletteFiles.empty() && fs::exists("etc/palette.json")) {
+            state.paletteFiles.push_back({ "Default", "etc/palette.json" });
+        }
+    }
+
+    // Load the first palette file (or legacy file if no palettes/ dir)
+    if (!state.paletteFiles.empty()) {
+        state.palette.loadFromFile(state.paletteFiles[0].path);
+        state.paletteFileIndex = 0;
+    } else {
+        state.palette.loadFromFile("etc/palette.json");
+    }
     state.beadGrid.resize(state.gridCols, state.gridRows);
 
     LOG_INFO("Main", "Perler Bead Simulator started");

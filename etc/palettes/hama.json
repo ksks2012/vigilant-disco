@@ -1,0 +1,420 @@
+{
+    "brand": "Hama",
+    "size": "Midi (5mm)",
+    "palette": [
+        {
+            "code": "H01",
+            "name": "H01 White",
+            "color": [
+                236,
+                237,
+                237
+            ]
+        },
+        {
+            "code": "H02",
+            "name": "H02 Cream",
+            "color": [
+                240,
+                232,
+                185
+            ]
+        },
+        {
+            "code": "H03",
+            "name": "H03 Yellow",
+            "color": [
+                240,
+                185,
+                1
+            ]
+        },
+        {
+            "code": "H04",
+            "name": "H04 Orange",
+            "color": [
+                230,
+                79,
+                39
+            ]
+        },
+        {
+            "code": "H05",
+            "name": "H05 Red",
+            "color": [
+                182,
+                49,
+                54
+            ]
+        },
+        {
+            "code": "H06",
+            "name": "H06 Pink",
+            "color": [
+                225,
+                136,
+                159
+            ]
+        },
+        {
+            "code": "H07",
+            "name": "H07 Purple",
+            "color": [
+                105,
+                74,
+                130
+            ]
+        },
+        {
+            "code": "H08",
+            "name": "H08 Dark Blue (Blue)",
+            "color": [
+                44,
+                70,
+                144
+            ]
+        },
+        {
+            "code": "H09",
+            "name": "H09 Light Blue",
+            "color": [
+                48,
+                92,
+                176
+            ]
+        },
+        {
+            "code": "H10",
+            "name": "H10 Green",
+            "color": [
+                37,
+                104,
+                71
+            ]
+        },
+        {
+            "code": "H11",
+            "name": "H11 Light green",
+            "color": [
+                73,
+                174,
+                137
+            ]
+        },
+        {
+            "code": "H12",
+            "name": "H12 Brown",
+            "color": [
+                83,
+                65,
+                55
+            ]
+        },
+        {
+            "code": "H13",
+            "name": "H13 Transparent Red",
+            "color": [
+                192,
+                36,
+                53
+            ]
+        },
+        {
+            "code": "H16",
+            "name": "H16 Transparent Green",
+            "color": [
+                55,
+                184,
+                118
+            ]
+        },
+        {
+            "code": "H17",
+            "name": "H17 Grey",
+            "color": [
+                131,
+                136,
+                138
+            ]
+        },
+        {
+            "code": "H18",
+            "name": "H18 Black",
+            "color": [
+                46,
+                47,
+                49
+            ]
+        },
+        {
+            "code": "H19",
+            "name": "H19 Clear",
+            "color": [
+                216,
+                210,
+                206
+            ]
+        },
+        {
+            "code": "H20",
+            "name": "H20 Reddish Brown",
+            "color": [
+                127,
+                51,
+                42
+            ]
+        },
+        {
+            "code": "H21",
+            "name": "H21 Light Brown",
+            "color": [
+                165,
+                105,
+                63
+            ]
+        },
+        {
+            "code": "H22",
+            "name": "H22 Dark Red",
+            "color": [
+                165,
+                45,
+                54
+            ]
+        },
+        {
+            "code": "H24",
+            "name": "H24 Translucent Purple",
+            "color": [
+                104,
+                62,
+                154
+            ]
+        },
+        {
+            "code": "H25",
+            "name": "H25 Translucent Brown",
+            "color": [
+                135,
+                89,
+                61
+            ]
+        },
+        {
+            "code": "H26",
+            "name": "H26 Flesh",
+            "color": [
+                222,
+                155,
+                144
+            ]
+        },
+        {
+            "code": "H27",
+            "name": "H27 Beige",
+            "color": [
+                222,
+                180,
+                139
+            ]
+        },
+        {
+            "code": "H28",
+            "name": "H28 Army (Dark Green)",
+            "color": [
+                54,
+                63,
+                56
+            ]
+        },
+        {
+            "code": "H29",
+            "name": "H29 Claret",
+            "color": [
+                185,
+                57,
+                94
+            ]
+        },
+        {
+            "code": "H30",
+            "name": "H30 Burgundy",
+            "color": [
+                89,
+                47,
+                56
+            ]
+        },
+        {
+            "code": "H31",
+            "name": "H31 Turquoise",
+            "color": [
+                103,
+                151,
+                174
+            ]
+        },
+        {
+            "code": "H32",
+            "name": "H32 Neon Pink (Fucsia)",
+            "color": [
+                255,
+                32,
+                141
+            ]
+        },
+        {
+            "code": "H33",
+            "name": "H33 Cerise",
+            "color": [
+                255,
+                57,
+                86
+            ]
+        },
+        {
+            "code": "H34",
+            "name": "H34 Neon Yellow",
+            "color": [
+                229,
+                239,
+                19
+            ]
+        },
+        {
+            "code": "H35",
+            "name": "H35 Neon Red",
+            "color": [
+                255,
+                40,
+                51
+            ]
+        },
+        {
+            "code": "H36",
+            "name": "H36 Neon Blue",
+            "color": [
+                35,
+                83,
+                176
+            ]
+        },
+        {
+            "code": "H37",
+            "name": "H37 Neon Green",
+            "color": [
+                6,
+                183,
+                60
+            ]
+        },
+        {
+            "code": "H38",
+            "name": "H38 Neon Orange",
+            "color": [
+                253,
+                134,
+                0
+            ]
+        },
+        {
+            "code": "H39",
+            "name": "H39 Fluorescent Yellow",
+            "color": [
+                241,
+                242,
+                28
+            ]
+        },
+        {
+            "code": "H40",
+            "name": "H40 Fluorescent Orange",
+            "color": [
+                254,
+                99,
+                11
+            ]
+        },
+        {
+            "code": "H41",
+            "name": "H41 Fluorescent Blue",
+            "color": [
+                38,
+                89,
+                178
+            ]
+        },
+        {
+            "code": "H42",
+            "name": "H42 Fluorescent Green",
+            "color": [
+                12,
+                189,
+                81
+            ]
+        },
+        {
+            "code": "H43",
+            "name": "H43 Pastel Yellow",
+            "color": [
+                240,
+                234,
+                55
+            ]
+        },
+        {
+            "code": "H44",
+            "name": "H44 Pastel Red",
+            "color": [
+                238,
+                105,
+                114
+            ]
+        },
+        {
+            "code": "H45",
+            "name": "H45 Pastel Purple",
+            "color": [
+                136,
+                109,
+                185
+            ]
+        },
+        {
+            "code": "H46",
+            "name": "H46 Pastel Blue",
+            "color": [
+                98,
+                158,
+                215
+            ]
+        },
+        {
+            "code": "H47",
+            "name": "H47 Pastel Green",
+            "color": [
+                131,
+                203,
+                112
+            ]
+        },
+        {
+            "code": "H48",
+            "name": "H48 Pastel Pink",
+            "color": [
+                207,
+                112,
+                183
+            ]
+        },
+        {
+            "code": "H49",
+            "name": "H49 Azure",
+            "color": [
+                73,
+                152,
+                188
+            ]
+        }
+    ]
+}

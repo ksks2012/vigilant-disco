@@ -1,0 +1,519 @@
+{
+    "brand": "Perler",
+    "size": "Midi (5mm)",
+    "palette": [
+        {
+            "code": "P01",
+            "name": "P01 White",
+            "color": [
+                241,
+                241,
+                241
+            ]
+        },
+        {
+            "code": "P02",
+            "name": "P02 Cream",
+            "color": [
+                224,
+                222,
+                169
+            ]
+        },
+        {
+            "code": "P03",
+            "name": "P03 Yellow",
+            "color": [
+                236,
+                216,
+                0
+            ]
+        },
+        {
+            "code": "P04",
+            "name": "P04 Orange",
+            "color": [
+                237,
+                97,
+                32
+            ]
+        },
+        {
+            "code": "P05",
+            "name": "P05 Red",
+            "color": [
+                191,
+                46,
+                64
+            ]
+        },
+        {
+            "code": "P06",
+            "name": "P06 Bubblegum",
+            "color": [
+                221,
+                102,
+                155
+            ]
+        },
+        {
+            "code": "P07",
+            "name": "P07 Purple",
+            "color": [
+                96,
+                64,
+                137
+            ]
+        },
+        {
+            "code": "P08",
+            "name": "P08 Dark Blue",
+            "color": [
+                43,
+                63,
+                135
+            ]
+        },
+        {
+            "code": "P09",
+            "name": "P09 Light Blue",
+            "color": [
+                51,
+                112,
+                192
+            ]
+        },
+        {
+            "code": "P10",
+            "name": "P10 Dark Green",
+            "color": [
+                28,
+                117,
+                62
+            ]
+        },
+        {
+            "code": "P100",
+            "name": "P100 Pearl Coral",
+            "color": [
+                249,
+                126,
+                121
+            ]
+        },
+        {
+            "code": "P101",
+            "name": "P101 Pearl Light Blue",
+            "color": [
+                122,
+                174,
+                162
+            ]
+        },
+        {
+            "code": "p102",
+            "name": "p102 Pearl Green",
+            "color": [
+                132,
+                183,
+                145
+            ]
+        },
+        {
+            "code": "P103",
+            "name": "P103 Pearl Yellow",
+            "color": [
+                202,
+                192,
+                51
+            ]
+        },
+        {
+            "code": "P104",
+            "name": "P104 Pearl Light Pink",
+            "color": [
+                215,
+                168,
+                162
+            ]
+        },
+        {
+            "code": "P105",
+            "name": "P105 Silver",
+            "color": [
+                119,
+                123,
+                129
+            ]
+        },
+        {
+            "code": "P11",
+            "name": "P11 Light Green",
+            "color": [
+                86,
+                186,
+                159
+            ]
+        },
+        {
+            "code": "P12",
+            "name": "P12 Brown",
+            "color": [
+                81,
+                57,
+                49
+            ]
+        },
+        {
+            "code": "P17",
+            "name": "P17 Grey",
+            "color": [
+                138,
+                141,
+                145
+            ]
+        },
+        {
+            "code": "P18",
+            "name": "P18 Black",
+            "color": [
+                46,
+                47,
+                50
+            ]
+        },
+        {
+            "code": "P20",
+            "name": "P20 Rust",
+            "color": [
+                140,
+                55,
+                44
+            ]
+        },
+        {
+            "code": "P21",
+            "name": "P21 Light Brown",
+            "color": [
+                129,
+                93,
+                52
+            ]
+        },
+        {
+            "code": "P33",
+            "name": "P33 Peach",
+            "color": [
+                238,
+                186,
+                178
+            ]
+        },
+        {
+            "code": "P35",
+            "name": "P35 Tan",
+            "color": [
+                188,
+                147,
+                113
+            ]
+        },
+        {
+            "code": "P38",
+            "name": "P38 Magenta",
+            "color": [
+                242,
+                42,
+                123
+            ]
+        },
+        {
+            "code": "P47",
+            "name": "P47 Neon Yellow",
+            "color": [
+                220,
+                224,
+                2
+            ]
+        },
+        {
+            "code": "P48",
+            "name": "P48 Neon Orange",
+            "color": [
+                255,
+                119,
+                0
+            ]
+        },
+        {
+            "code": "P49",
+            "name": "P49 Neon Green",
+            "color": [
+                1,
+                158,
+                67
+            ]
+        },
+        {
+            "code": "P50",
+            "name": "P50 Neon Pink",
+            "color": [
+                255,
+                57,
+                145
+            ]
+        },
+        {
+            "code": "P52",
+            "name": "P52 Pastel Blue",
+            "color": [
+                83,
+                144,
+                209
+            ]
+        },
+        {
+            "code": "P53",
+            "name": "P53 Pastel Green",
+            "color": [
+                118,
+                200,
+                130
+            ]
+        },
+        {
+            "code": "P54",
+            "name": "P54 Pastel Lavender",
+            "color": [
+                138,
+                114,
+                193
+            ]
+        },
+        {
+            "code": "P56",
+            "name": "P56 Pastel Yellow",
+            "color": [
+                254,
+                248,
+                117
+            ]
+        },
+        {
+            "code": "P57",
+            "name": "P57 Chedder",
+            "color": [
+                241,
+                170,
+                12
+            ]
+        },
+        {
+            "code": "P58",
+            "name": "P58 Toothpaste",
+            "color": [
+                147,
+                200,
+                212
+            ]
+        },
+        {
+            "code": "P59",
+            "name": "P59 Hot Coral",
+            "color": [
+                255,
+                56,
+                81
+            ]
+        },
+        {
+            "code": "P60",
+            "name": "P60 Plum",
+            "color": [
+                162,
+                75,
+                156
+            ]
+        },
+        {
+            "code": "P61",
+            "name": "P61 Kiwi Lime",
+            "color": [
+                108,
+                190,
+                19
+            ]
+        },
+        {
+            "code": "P62",
+            "name": "P62 Cyan (aka Turquoise)",
+            "color": [
+                43,
+                137,
+                198
+            ]
+        },
+        {
+            "code": "P63",
+            "name": "P63 Blush",
+            "color": [
+                255,
+                130,
+                133
+            ]
+        },
+        {
+            "code": "P70",
+            "name": "P70 Periwinkle Blue",
+            "color": [
+                100,
+                124,
+                190
+            ]
+        },
+        {
+            "code": "P75",
+            "name": "P75 Glow Green",
+            "color": [
+                190,
+                198,
+                150
+            ]
+        },
+        {
+            "code": "P79",
+            "name": "P79 Light Pink",
+            "color": [
+                246,
+                179,
+                221
+            ]
+        },
+        {
+            "code": "P80",
+            "name": "P80 Bright Green",
+            "color": [
+                79,
+                173,
+                66
+            ]
+        },
+        {
+            "code": "P81",
+            "name": "P81 Light Gray",
+            "color": [
+                177,
+                181,
+                178
+            ]
+        },
+        {
+            "code": "P179",
+            "name": "P179 Evergreen",
+            "color": [
+                53,
+                83,
+                67
+            ]
+        },
+        {
+            "code": "P82",
+            "name": "P82 Lavender",
+            "color": [
+                173,
+                152,
+                212
+            ]
+        },
+        {
+            "code": "P83",
+            "name": "P83 Pink",
+            "color": [
+                228,
+                72,
+                146
+            ]
+        },
+        {
+            "code": "P85",
+            "name": "P85 Gold",
+            "color": [
+                187,
+                118,
+                52
+            ]
+        },
+        {
+            "code": "P88",
+            "name": "P88 Raspberry",
+            "color": [
+                165,
+                48,
+                97
+            ]
+        },
+        {
+            "code": "P90",
+            "name": "P90 Butterscotch",
+            "color": [
+                212,
+                132,
+                55
+            ]
+        },
+        {
+            "code": "P91",
+            "name": "P91 Parrot Green",
+            "color": [
+                6,
+                124,
+                129
+            ]
+        },
+        {
+            "code": "P92",
+            "name": "P92 Dark Grey",
+            "color": [
+                77,
+                81,
+                86
+            ]
+        },
+        {
+            "code": "P93",
+            "name": "P93 Blueberry Cream",
+            "color": [
+                130,
+                151,
+                217
+            ]
+        },
+        {
+            "code": "P96",
+            "name": "P96 Cranapple",
+            "color": [
+                128,
+                50,
+                69
+            ]
+        },
+        {
+            "code": "P97",
+            "name": "P97 Prickly Pear",
+            "color": [
+                189,
+                218,
+                1
+            ]
+        },
+        {
+            "code": "P98",
+            "name": "P98 Sand",
+            "color": [
+                228,
+                182,
+                144
+            ]
+        }
+    ]
+}

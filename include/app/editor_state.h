@@ -10,6 +10,13 @@
 #include "app/canvas.h"
 
 #include <string>
+#include <vector>
+
+// Describes a palette file that can be selected from the UI.
+struct PaletteFileEntry {
+    std::string label;     // display name, e.g. "Perler (42 colours)"
+    std::string path;      // file path, e.g. "etc/palettes/perler.json"
+};
 
 // Shared editor state accessible by all UI panels.
 // Owned by main(), passed by reference to panel draw calls.
@@ -30,6 +37,10 @@ struct EditorState {
     Tool currentTool    = Tool::Brush;
     int  brushSize      = 1;     // 1 = 1x1, 2 = 3x3, 3 = 5x5
     int  selectedColor  = 1;     // palette index for painting
+
+    // ── Palette files ─────────────────────────────────────────────────────────
+    std::vector<PaletteFileEntry> paletteFiles;
+    int  paletteFileIndex = 0;   // currently selected palette file
 
     // ── View ──────────────────────────────────────────────────────────────────
     bool viewCentred = false;
