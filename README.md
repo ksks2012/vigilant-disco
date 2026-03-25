@@ -21,8 +21,9 @@ your design as a PNG or CSV bead count sheet.
 - **Editing Tools** — Brush (size 1×1 / 3×3 / 5×5), Flood Fill, Eyedropper
 - **Bresenham Brush Interpolation** — Fast mouse strokes are gap-free thanks to
   line interpolation between frames
-- **Colour Palette** — 12 configurable bead colours loaded from an external JSON file
-  (`etc/palette.json`)
+- **Multi-Brand Palette** — Switch between bead brands at runtime via a drop-down:
+  - **Perler** (42 colours), **Hama** (36 colours), **Artkal** (43 colours), **Nabbi** (27 colours)
+  - Palette files live in `etc/palettes/` (JSON); add your own brand by dropping in a new file
 - **Undo / Redo** — Delta-based history (up to 100 steps) that stores only the cells
   that changed, keeping memory usage minimal even for large grids. Brush strokes are
   grouped as a single undo unit
@@ -98,7 +99,12 @@ pin/
 ├── include/                      # Header files (mirrors src/)
 ├── etc/
 │   ├── config.json               # Window size, log level
-│   └── palette.json              # Bead colour definitions
+│   ├── palette.json              # Legacy fallback palette
+│   └── palettes/                 # Brand palette files (auto-discovered)
+│       ├── perler.json
+│       ├── hama.json
+│       ├── artkal.json
+│       └── nabbi.json
 ├── lib/                          # Bundled third-party libraries
 ├── img/                          # Screenshots
 └── CMakeLists.txt
@@ -115,11 +121,30 @@ pin/
 }
 ```
 
-### `etc/palette.json`
+### `etc/palettes/*.json`
 
-Defines the available bead colours. Each entry has a `name` and an `[R, G, B]` colour
-value. Index 0 is always reserved for "Empty" (no bead). You can freely add, remove or
-reorder colours.
+Each JSON file in `etc/palettes/` defines one bead brand's colour set. The application
+auto-discovers all `.json` files in this directory at startup.
+
+```json
+{
+    "brand": "Perler",
+    "size": "Midi (5mm)",
+    "palette": [
+        { "name": "Black", "color": [0, 0, 0] },
+        { "name": "White", "color": [241, 241, 241] }
+    ]
+}
+```
+
+- `brand` / `size` — displayed in the UI drop-down (optional; filename is used as
+  fallback)
+- `palette` — array of `{ name, color: [R, G, B] }` entries. Index 0 is always
+  reserved for "Empty" (auto-inserted). You can freely add, remove or reorder colours.
+
+To add a new brand, simply drop a `.json` file into `etc/palettes/` — no code changes
+required. The legacy `etc/palette.json` is used as fallback when the `palettes/`
+directory is empty.
 
 ## Image Credits
 
