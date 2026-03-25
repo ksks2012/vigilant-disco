@@ -23,8 +23,9 @@ your design as a PNG or CSV bead count sheet.
   line interpolation between frames
 - **Colour Palette** — 12 configurable bead colours loaded from an external JSON file
   (`etc/palette.json`)
-- **Undo / Redo** — Snapshot-based history (up to 100 steps), brush strokes grouped as
-  a single undo unit
+- **Undo / Redo** — Delta-based history (up to 100 steps) that stores only the cells
+  that changed, keeping memory usage minimal even for large grids. Brush strokes are
+  grouped as a single undo unit
 - **Project Save / Load** — `.pin` JSON format preserving grid data and palette
 - **Export** — PNG (Flat grid or 3D bead style) and CSV bead count report
 - **Zoom & Pan** — Scroll to zoom, right / middle-click drag to pan
