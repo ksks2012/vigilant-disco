@@ -14,7 +14,7 @@
 void CanvasPanel::draw(EditorState& state, const Window& window) {
     ImGui::SetNextWindowPos(ImVec2(280, 0), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(
-        ImVec2(static_cast<float>(window.getWidth()) - 280.0f,
+        ImVec2(static_cast<float>(window.getWidth()) - 280.0f - 220.0f,
                static_cast<float>(window.getHeight())),
         ImGuiCond_FirstUseEver);
 

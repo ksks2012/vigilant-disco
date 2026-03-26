@@ -3,6 +3,7 @@
 #include "app/editor_state.h"
 #include "app/control_panel.h"
 #include "app/canvas_panel.h"
+#include "app/stats_panel.h"
 #include "logging/logger.h"
 #include "logging/spdlog_logger.h"
 
@@ -54,6 +55,7 @@ int main(int /*argc*/, char* /*argv*/[]) {
     EditorState  state;
     ControlPanel controlPanel;
     CanvasPanel  canvasPanel;
+    StatsPanel   statsPanel;
 
     // ── Discover palette files in etc/palettes/ ───────────────────────────────
     {
@@ -118,6 +120,7 @@ int main(int /*argc*/, char* /*argv*/[]) {
         // ── UI panels ─────────────────────────────────────────────────────────
         controlPanel.draw(state);
         canvasPanel.draw(state, window);
+        statsPanel.draw(state, window);
 
         // ── Render ────────────────────────────────────────────────────────────
         ImGui::Render();
