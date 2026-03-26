@@ -128,6 +128,33 @@ void ControlPanel::drawImportSection(EditorState& state) {
         ImGui::SetTooltip("Supports PNG, JPG, BMP, TGA, GIF, PSD, HDR, PIC");
     }
 
+    // ── Background removal ────────────────────────────────────────────────────
+    ImGui::Spacing();
+    ImGui::SliderInt("BG Tolerance", &state.importBgTolerance, 0, 200);
+    if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("Colour distance threshold (0 = exact match only, "
+                          "higher = more aggressive)");
+    }
+    if (ImGui::Button("Remove BG")) {
+        state.undoManager.saveSnapshot(state.beadGrid.cols(),
+                                        state.beadGrid.rows(),
+                                        state.beadGrid.cells());
+        int cleared = state.beadGrid.removeBackground(state.palette,
+                                                       state.importBgTolerance);
+        state.undoManager.commitEdit(state.beadGrid.cols(),
+                                      state.beadGrid.rows(),
+                                      state.beadGrid.cells());
+        state.importStatus = "Removed " + std::to_string(cleared) + " background beads";
+        state.textureCache.markDirty();
+    }
+    ImGui::SameLine();
+    ImGui::TextDisabled("(?)");
+    if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("Flood-fill from all edges to remove background.\n"
+                          "Cells whose colour is within 'BG Tolerance' of\n"
+                          "adjacent background cells are cleared to Empty.");
+    }
+
     if (!state.importStatus.empty()) {
         ImGui::TextWrapped("%s", state.importStatus.c_str());
     }

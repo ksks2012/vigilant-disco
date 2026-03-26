@@ -38,6 +38,12 @@ public:
     // (col, row) with newColorIdx. Uses iterative BFS to avoid stack overflow.
     void floodFill(int col, int row, uint8_t newColorIdx);
 
+    // Remove background by flood-filling from all four edges.
+    // Any connected cell whose palette colour is within `tolerance` (squared
+    // Euclidean RGB distance) of the edge cell's colour is set to Empty (0).
+    // Returns the number of cells cleared.
+    int removeBackground(const Palette& palette, int tolerance);
+
     // Clear the entire grid (set all to 0 = empty)
     void clear();
 
