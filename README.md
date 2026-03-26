@@ -24,6 +24,9 @@ your design as a PNG or CSV bead count sheet.
 - **Multi-Brand Palette** — Switch between bead brands at runtime via a drop-down:
   - **Perler** (42 colours), **Hama** (36 colours), **Artkal** (43 colours), **Nabbi** (27 colours)
   - Palette files live in `etc/palettes/` (JSON); add your own brand by dropping in a new file
+- **Background Removal** — Edge flood-fill removes the background from imported images.
+  Adjustable colour-distance tolerance adapts to gradual background gradients.
+  A separate "Remove Blobs" pass cleans up isolated small regions left behind
 - **Undo / Redo** — Delta-based history (up to 100 steps) that stores only the cells
   that changed, keeping memory usage minimal even for large grids. Brush strokes are
   grouped as a single undo unit
@@ -38,6 +41,12 @@ your design as a PNG or CSV bead count sheet.
 ![Area Average import — better detail retention when down-sampling](img/area_average.png "Area Average import — better detail retention when down-sampling")
 
 ![Redmean color match — perceptually weighted colour matching](img/redmean.png "Redmean color match — perceptually weighted colour matching")
+
+![Artkal palette — using the Artkal bead brand colour set](img/artkal.png "Artkal palette — using the Artkal bead brand colour set")
+
+![Background removal — edge flood-fill removes the background](img/bg.png "Background removal — edge flood-fill removes the background")
+
+![Background removal export — cleaned-up export after background removal](img/bg_export.png "Background removal export — cleaned-up export after background removal")
 
 ## Keyboard Shortcuts
 
