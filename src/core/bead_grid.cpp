@@ -216,3 +216,70 @@ int BeadGrid::removeBackground(const Palette& palette, int tolerance) {
 
     return cleared;
 }
+
+// ── Remove isolated small blobs ───────────────────────────────────────────────
+
+int BeadGrid::removeSmallBlobs(int maxSize) {
+    if (cols_ <= 0 || rows_ <= 0 || maxSize <= 0) return 0;
+
+    const size_t total = static_cast<size_t>(cols_) * rows_;
+    // Label each cell: 0 = unvisited
+    std::vector<int> label(total, 0);
+    int nextLabel = 1;
+
+    // Store the list of cell indices for each connected component
+    std::vector<std::vector<size_t>> components;
+
+    // 4-connected neighbours
+    static constexpr int dx[] = { 0, 0, -1, 1 };
+    static constexpr int dy[] = { -1, 1, 0, 0 };
+
+    // BFS to label connected components of non-empty cells
+    std::queue<std::pair<int, int>> q;
+
+    for (int r = 0; r < rows_; ++r) {
+        for (int c = 0; c < cols_; ++c) {
+            size_t idx = static_cast<size_t>(r) * cols_ + c;
+            if (cells_[idx] == 0 || label[idx] != 0) continue;
+
+            // Start a new component
+            int currentLabel = nextLabel++;
+            std::vector<size_t> comp;
+
+            label[idx] = currentLabel;
+            q.push({ c, r });
+
+            while (!q.empty()) {
+                auto [cx, cy] = q.front();
+                q.pop();
+                size_t ci = static_cast<size_t>(cy) * cols_ + cx;
+                comp.push_back(ci);
+
+                for (int d = 0; d < 4; ++d) {
+                    int nx = cx + dx[d];
+                    int ny = cy + dy[d];
+                    if (!inBounds(nx, ny)) continue;
+                    size_t ni = static_cast<size_t>(ny) * cols_ + nx;
+                    if (cells_[ni] == 0 || label[ni] != 0) continue;
+                    label[ni] = currentLabel;
+                    q.push({ nx, ny });
+                }
+            }
+
+            components.push_back(std::move(comp));
+        }
+    }
+
+    // Clear components that are small enough
+    int cleared = 0;
+    for (const auto& comp : components) {
+        if (static_cast<int>(comp.size()) <= maxSize) {
+            for (size_t idx : comp) {
+                cells_[idx] = 0;
+                ++cleared;
+            }
+        }
+    }
+
+    return cleared;
+}

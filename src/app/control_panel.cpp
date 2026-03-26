@@ -155,6 +155,32 @@ void ControlPanel::drawImportSection(EditorState& state) {
                           "adjacent background cells are cleared to Empty.");
     }
 
+    // ── Remove isolated small blobs ───────────────────────────────────────────
+    ImGui::SliderInt("Max Blob Size", &state.importBlobSize, 1, 50);
+    if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("Connected regions with this many cells or fewer\n"
+                          "will be removed. Useful for cleaning up stray beads\n"
+                          "left after background removal.");
+    }
+    if (ImGui::Button("Remove Blobs")) {
+        state.undoManager.saveSnapshot(state.beadGrid.cols(),
+                                        state.beadGrid.rows(),
+                                        state.beadGrid.cells());
+        int cleared = state.beadGrid.removeSmallBlobs(state.importBlobSize);
+        state.undoManager.commitEdit(state.beadGrid.cols(),
+                                      state.beadGrid.rows(),
+                                      state.beadGrid.cells());
+        state.importStatus = "Removed " + std::to_string(cleared) + " isolated beads";
+        state.textureCache.markDirty();
+    }
+    ImGui::SameLine();
+    ImGui::TextDisabled("(?)");
+    if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("Delete small isolated colour blobs.\n"
+                          "Any connected region of non-empty cells\n"
+                          "with area <= 'Max Blob Size' is cleared.");
+    }
+
     if (!state.importStatus.empty()) {
         ImGui::TextWrapped("%s", state.importStatus.c_str());
     }

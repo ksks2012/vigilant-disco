@@ -44,6 +44,11 @@ public:
     // Returns the number of cells cleared.
     int removeBackground(const Palette& palette, int tolerance);
 
+    // Remove isolated blobs: clear any connected non-empty region whose
+    // area (cell count) is less than or equal to `maxSize`.
+    // Returns the number of cells cleared.
+    int removeSmallBlobs(int maxSize);
+
     // Clear the entire grid (set all to 0 = empty)
     void clear();
 
