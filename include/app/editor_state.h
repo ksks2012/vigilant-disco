@@ -5,6 +5,7 @@
 #include "core/palette.h"
 #include "core/undo_manager.h"
 #include "core/image_importer.h"
+#include "core/pegboard_manager.h"
 #include "rendering/grid_renderer.h"
 #include "rendering/bead_texture_cache.h"
 #include "app/canvas.h"
@@ -69,11 +70,27 @@ struct EditorState {
     int         exportStyle     = 1;   // 0 = Flat, 1 = Bead
     std::string exportStatus;
 
+    // ── Pegboard ──────────────────────────────────────────────────────────────
+    PegboardManager pegboardManager;
+    int  pegboardSize     = 29;     // standard pegboard dimension
+    int  pegboardSizeIdx  = 0;      // combo index: 0 = 29x29, 1 = 57x57
+    int  currentBoard     = 0;      // selected tile index
+    bool showBoardOverlay = true;   // draw board grid lines on canvas
+    bool pegboardDirty    = true;   // recalculate on next frame
+
+    // Focus-board request (set by "Focus Board" button, consumed by canvas)
+    bool  focusBoardRequested = false;
+    float focusBoardCentreX   = 0.0f;
+    float focusBoardCentreY   = 0.0f;
+    float focusBoardWidth     = 29.0f;
+    float focusBoardHeight    = 29.0f;
+
     // ── Helpers ───────────────────────────────────────────────────────────────
     // Sync gridCols/gridRows after a load or import that changes grid size
     void syncGridDims() {
         gridCols = beadGrid.cols();
         gridRows = beadGrid.rows();
+        pegboardDirty = true;
     }
 };
 

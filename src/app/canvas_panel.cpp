@@ -8,6 +8,7 @@
 #include <cmath>
 #include <cstdlib> // std::abs
 #include <cstring>
+#include <string>
 
 // ── Main draw ─────────────────────────────────────────────────────────────────
 
@@ -30,6 +31,16 @@ void CanvasPanel::draw(EditorState& state, const Window& window) {
             state.viewCentred = true;
         }
 
+        // Handle "Focus Board" request from control panel
+        if (state.focusBoardRequested) {
+            state.canvas.focusRect(state.focusBoardCentreX,
+                                   state.focusBoardCentreY,
+                                   state.focusBoardWidth,
+                                   state.focusBoardHeight);
+            state.focusBoardRequested = false;
+            state.viewCentred = true;
+        }
+
         handleShortcuts(state);
         handleMouseInteraction(state);
 
@@ -38,6 +49,11 @@ void CanvasPanel::draw(EditorState& state, const Window& window) {
 
         // Draw the cached texture via ImGui, mapped to world coordinates
         drawCachedTexture(state);
+
+        // Draw pegboard overlay lines
+        if (state.showBoardOverlay) {
+            drawPegboardOverlay(state);
+        }
 
         state.canvas.end();
     }
@@ -225,5 +241,57 @@ void CanvasPanel::drawCachedTexture(EditorState& state) {
             topLeft, botRight,
             ImVec2(0.0f, 0.0f),   // UV top-left
             ImVec2(1.0f, 1.0f));  // UV bottom-right
+    }
+}
+
+// ── Draw pegboard overlay lines on the canvas ─────────────────────────────────
+
+void CanvasPanel::drawPegboardOverlay(EditorState& state) {
+    ImDrawList* dl = state.canvas.drawList();
+    if (!dl) return;
+
+    const auto& mgr = state.pegboardManager;
+    if (mgr.totalTiles() <= 1) return;  // single board — nothing to draw
+
+    int pegSize = mgr.pegboardSize();
+    int gridCols = state.beadGrid.cols();
+    int gridRows = state.beadGrid.rows();
+    int tilesX = mgr.tileCountX();
+    int tilesY = mgr.tileCountY();
+
+    ImU32 lineCol     = IM_COL32(255, 200, 50, 180);
+    ImU32 currentCol  = IM_COL32(255, 100, 50, 220);
+    float lineThick   = 2.0f;
+    float currentThick = 3.5f;
+
+    // Draw vertical board-boundary lines
+    for (int tx = 1; tx < tilesX; ++tx) {
+        float wx = static_cast<float>(tx * pegSize);
+        ImVec2 top = state.canvas.worldToScreen(wx, 0.0f);
+        ImVec2 bot = state.canvas.worldToScreen(wx, static_cast<float>(gridRows));
+        dl->AddLine(top, bot, lineCol, lineThick);
+    }
+
+    // Draw horizontal board-boundary lines
+    for (int ty = 1; ty < tilesY; ++ty) {
+        float wy = static_cast<float>(ty * pegSize);
+        ImVec2 left  = state.canvas.worldToScreen(0.0f, wy);
+        ImVec2 right = state.canvas.worldToScreen(static_cast<float>(gridCols), wy);
+        dl->AddLine(left, right, lineCol, lineThick);
+    }
+
+    // Highlight the currently selected board with a thicker rectangle
+    if (state.currentBoard >= 0 && state.currentBoard < mgr.totalTiles()) {
+        const auto& t = mgr.tile(state.currentBoard);
+        ImVec2 tl = state.canvas.worldToScreen(
+            static_cast<float>(t.startCol), static_cast<float>(t.startRow));
+        ImVec2 br = state.canvas.worldToScreen(
+            static_cast<float>(t.endCol), static_cast<float>(t.endRow));
+        dl->AddRect(tl, br, currentCol, 0.0f, 0, currentThick);
+
+        // Label in the top-left corner of the board
+        std::string label = PegboardManager::tileLabel(t);
+        ImVec2 textPos = ImVec2(tl.x + 4.0f, tl.y + 2.0f);
+        dl->AddText(textPos, currentCol, label.c_str());
     }
 }

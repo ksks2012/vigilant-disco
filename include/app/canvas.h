@@ -51,6 +51,9 @@ public:
     // Reset view to centre the given world rectangle
     void centreView(float worldWidth, float worldHeight);
 
+    // Focus the view on a specific world-space rectangle (cx, cy = centre).
+    void focusRect(float cx, float cy, float width, float height);
+
 private:
     // View state
     float  zoom_   = 20.0f;  // pixels per world unit

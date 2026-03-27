@@ -14,6 +14,7 @@ private:
     void drawImportSection(EditorState& state);
     void drawExportSection(EditorState& state);
     void drawGridSizeSection(EditorState& state);
+    void drawPegboardSection(EditorState& state);
     void drawToolsSection(EditorState& state);
     void drawPaletteSection(EditorState& state);
     void drawViewInfoSection(EditorState& state);

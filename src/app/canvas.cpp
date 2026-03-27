@@ -109,3 +109,16 @@ void Canvas::centreView(float worldWidth, float worldHeight) {
     offset_.x = worldWidth  * 0.5f - (canvasSize_.x * 0.5f) / zoom_;
     offset_.y = worldHeight * 0.5f - (canvasSize_.y * 0.5f) / zoom_;
 }
+
+void Canvas::focusRect(float cx, float cy, float width, float height) {
+    if (canvasSize_.x <= 0.0f || canvasSize_.y <= 0.0f) return;
+
+    float scaleX = canvasSize_.x / width;
+    float scaleY = canvasSize_.y / height;
+    zoom_ = std::min(scaleX, scaleY) * 0.9f; // 90% fill
+    zoom_ = std::clamp(zoom_, minZoom_, maxZoom_);
+
+    // Centre offset so (cx, cy) is in the middle of the canvas
+    offset_.x = cx - (canvasSize_.x * 0.5f) / zoom_;
+    offset_.y = cy - (canvasSize_.y * 0.5f) / zoom_;
+}
