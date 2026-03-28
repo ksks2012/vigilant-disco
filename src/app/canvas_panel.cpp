@@ -13,15 +13,19 @@
 // ── Main draw ─────────────────────────────────────────────────────────────────
 
 void CanvasPanel::draw(EditorState& state, const Window& window) {
-    ImGui::SetNextWindowPos(ImVec2(280, 0), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(
-        ImVec2(static_cast<float>(window.getWidth()) - 280.0f - 220.0f,
-               static_cast<float>(window.getHeight())),
-        ImGuiCond_FirstUseEver);
+    float leftW  = 280.0f;
+    float rightW = 220.0f;
+    float winW   = static_cast<float>(window.getWidth());
+    float winH   = static_cast<float>(window.getHeight());
+
+    ImGui::SetNextWindowPos(ImVec2(leftW, 0), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(winW - leftW - rightW, winH), ImGuiCond_Always);
 
     ImGui::Begin("Canvas", nullptr,
                  ImGuiWindowFlags_NoScrollbar |
-                 ImGuiWindowFlags_NoScrollWithMouse);
+                 ImGuiWindowFlags_NoScrollWithMouse |
+                 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
+                 ImGuiWindowFlags_NoCollapse);
 
     if (state.canvas.begin()) {
         // Centre the view on the first valid frame

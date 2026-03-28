@@ -9,16 +9,19 @@
 // ── Main draw ─────────────────────────────────────────────────────────────────
 
 void StatsPanel::draw(EditorState& state, const Window& window) {
-    // Position the panel to the right of the canvas
+    // Position the panel at the bottom-right of the window
     float panelWidth = 220.0f;
-    ImGui::SetNextWindowPos(
-        ImVec2(static_cast<float>(window.getWidth()) - panelWidth, 0),
-        ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(
-        ImVec2(panelWidth, static_cast<float>(window.getHeight())),
-        ImGuiCond_FirstUseEver);
+    float winW = static_cast<float>(window.getWidth());
+    float winH = static_cast<float>(window.getHeight());
+    float topH = winH * 0.50f;
+    float panelH = winH - topH;
 
-    ImGui::Begin("Bead Statistics");
+    ImGui::SetNextWindowPos(ImVec2(winW - panelWidth, topH), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(panelWidth, panelH), ImGuiCond_Always);
+
+    ImGui::Begin("Bead Statistics", nullptr,
+                 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
+                 ImGuiWindowFlags_NoCollapse);
 
     // ── Count beads per colour index ──────────────────────────────────────────
     const auto& cells = state.beadGrid.cells();

@@ -1,8 +1,10 @@
 #include "app/window.h"
 #include "app/config.h"
 #include "app/editor_state.h"
-#include "app/control_panel.h"
+#include "app/tools_panel.h"
+#include "app/file_panel.h"
 #include "app/canvas_panel.h"
+#include "app/pegboard_panel.h"
 #include "app/stats_panel.h"
 #include "logging/logger.h"
 #include "logging/spdlog_logger.h"
@@ -52,10 +54,12 @@ int main(int /*argc*/, char* /*argv*/[]) {
     ImVec4 clear_color = ImVec4(0.90f, 0.90f, 0.92f, 1.00f);
 
     // ── Editor state & UI panels ──────────────────────────────────────────────
-    EditorState  state;
-    ControlPanel controlPanel;
-    CanvasPanel  canvasPanel;
-    StatsPanel   statsPanel;
+    EditorState    state;
+    ToolsPanel     toolsPanel;
+    FilePanel      filePanel;
+    CanvasPanel    canvasPanel;
+    PegboardPanel  pegboardPanel;
+    StatsPanel     statsPanel;
 
     // ── Discover palette files in etc/palettes/ ───────────────────────────────
     {
@@ -118,9 +122,11 @@ int main(int /*argc*/, char* /*argv*/[]) {
         ImGui::NewFrame();
 
         // ── UI panels ─────────────────────────────────────────────────────────
-        controlPanel.draw(state);
-        canvasPanel.draw(state, window);
-        statsPanel.draw(state, window);
+        toolsPanel.draw(state, window);       // left-upper
+        filePanel.draw(state, window);        // left-lower
+        canvasPanel.draw(state, window);      // centre
+        pegboardPanel.draw(state, window);    // right-upper
+        statsPanel.draw(state, window);       // right-lower
 
         // ── Render ────────────────────────────────────────────────────────────
         ImGui::Render();
