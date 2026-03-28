@@ -1,13 +1,14 @@
 #ifndef CANVAS_PANEL_H
 #define CANVAS_PANEL_H
 
+#include "app/layout.h"
+
 struct EditorState;
-class Window;
 
 // Draws the canvas window and handles keyboard shortcuts + mouse interaction.
 class CanvasPanel {
 public:
-    void draw(EditorState& state, const Window& window);
+    void draw(EditorState& state, const LayoutRect& rect);
 
 private:
     void handleShortcuts(EditorState& state);

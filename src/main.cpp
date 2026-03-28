@@ -1,6 +1,7 @@
 #include "app/window.h"
 #include "app/config.h"
 #include "app/editor_state.h"
+#include "app/layout.h"
 #include "app/tools_panel.h"
 #include "app/file_panel.h"
 #include "app/canvas_panel.h"
@@ -122,11 +123,15 @@ int main(int /*argc*/, char* /*argv*/[]) {
         ImGui::NewFrame();
 
         // ── UI panels ─────────────────────────────────────────────────────────
-        toolsPanel.draw(state, window);       // left-upper
-        filePanel.draw(state, window);        // left-lower
-        canvasPanel.draw(state, window);      // centre
-        pegboardPanel.draw(state, window);    // right-upper
-        statsPanel.draw(state, window);       // right-lower
+        AppLayout layout = LayoutManager::compute(
+            static_cast<float>(window.getWidth()),
+            static_cast<float>(window.getHeight()));
+
+        toolsPanel.draw(state, layout.toolsPanel);       // left-upper
+        filePanel.draw(state, layout.filePanel);          // left-lower
+        canvasPanel.draw(state, layout.canvasPanel);      // centre
+        pegboardPanel.draw(state, layout.pegboardPanel);  // right-upper
+        statsPanel.draw(state, layout.statsPanel);        // right-lower
 
         // ── Render ────────────────────────────────────────────────────────────
         ImGui::Render();

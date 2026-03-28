@@ -1,13 +1,14 @@
 #ifndef PEGBOARD_PANEL_H
 #define PEGBOARD_PANEL_H
 
+#include "app/layout.h"
+
 struct EditorState;
-class Window;
 
 // Right-upper panel: pegboard settings, navigation, and mini-map.
 class PegboardPanel {
 public:
-    void draw(EditorState& state, const Window& window);
+    void draw(EditorState& state, const LayoutRect& rect);
 
 private:
     void drawSettingsSection(EditorState& state);

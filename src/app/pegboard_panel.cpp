@@ -1,6 +1,5 @@
 #include "app/pegboard_panel.h"
 #include "app/editor_state.h"
-#include "app/window.h"
 
 #include <imgui.h>
 #include <cstdio>
@@ -8,19 +7,11 @@
 #include <vector>
 #include <algorithm>
 
-// ── Layout constants ──────────────────────────────────────────────────────────
-static constexpr float kRightPanelWidth = 220.0f;
-static constexpr float kRightUpperRatio = 0.50f;
-
 // ── Main draw ─────────────────────────────────────────────────────────────────
 
-void PegboardPanel::draw(EditorState& state, const Window& window) {
-    float winW = static_cast<float>(window.getWidth());
-    float winH = static_cast<float>(window.getHeight());
-    float panelH = winH * kRightUpperRatio;
-
-    ImGui::SetNextWindowPos(ImVec2(winW - kRightPanelWidth, 0), ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(kRightPanelWidth, panelH), ImGuiCond_Always);
+void PegboardPanel::draw(EditorState& state, const LayoutRect& rect) {
+    ImGui::SetNextWindowPos(rect.pos(), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(rect.size(), ImGuiCond_Always);
 
     ImGui::Begin("Pegboard", nullptr,
                  ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |

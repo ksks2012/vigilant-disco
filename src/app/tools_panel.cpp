@@ -1,23 +1,15 @@
 #include "app/tools_panel.h"
 #include "app/editor_state.h"
-#include "app/window.h"
 
 #include <imgui.h>
 #include <cmath>
 #include <algorithm>
 
-// ── Layout constants ──────────────────────────────────────────────────────────
-static constexpr float kLeftPanelWidth = 280.0f;
-static constexpr float kLeftUpperRatio = 0.50f; // upper half of left column
-
 // ── Main draw ─────────────────────────────────────────────────────────────────
 
-void ToolsPanel::draw(EditorState& state, const Window& window) {
-    float winH = static_cast<float>(window.getHeight());
-    float panelH = winH * kLeftUpperRatio;
-
-    ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(kLeftPanelWidth, panelH), ImGuiCond_Always);
+void ToolsPanel::draw(EditorState& state, const LayoutRect& rect) {
+    ImGui::SetNextWindowPos(rect.pos(), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(rect.size(), ImGuiCond_Always);
 
     ImGui::Begin("Tools & Palette", nullptr,
                  ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |

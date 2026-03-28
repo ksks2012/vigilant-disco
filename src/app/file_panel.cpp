@@ -1,7 +1,6 @@
 #include "app/file_panel.h"
 #include "app/editor_state.h"
 #include "app/file_dialog.h"
-#include "app/window.h"
 #include "core/project_file.h"
 #include "core/image_importer.h"
 #include "core/exporter.h"
@@ -10,19 +9,11 @@
 #include <cstring>
 #include <string>
 
-// ── Layout constants ──────────────────────────────────────────────────────────
-static constexpr float kLeftPanelWidth = 280.0f;
-static constexpr float kLeftUpperRatio = 0.50f;
-
 // ── Main draw ─────────────────────────────────────────────────────────────────
 
-void FilePanel::draw(EditorState& state, const Window& window) {
-    float winH = static_cast<float>(window.getHeight());
-    float topH = winH * kLeftUpperRatio;
-    float panelH = winH - topH;
-
-    ImGui::SetNextWindowPos(ImVec2(0, topH), ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(kLeftPanelWidth, panelH), ImGuiCond_Always);
+void FilePanel::draw(EditorState& state, const LayoutRect& rect) {
+    ImGui::SetNextWindowPos(rect.pos(), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(rect.size(), ImGuiCond_Always);
 
     ImGui::Begin("File & Import", nullptr,
                  ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |

@@ -1,7 +1,6 @@
 #include "app/canvas_panel.h"
 #include "app/editor_state.h"
 #include "app/file_dialog.h"
-#include "app/window.h"
 #include "core/project_file.h"
 
 #include <imgui.h>
@@ -12,14 +11,9 @@
 
 // ── Main draw ─────────────────────────────────────────────────────────────────
 
-void CanvasPanel::draw(EditorState& state, const Window& window) {
-    float leftW  = 280.0f;
-    float rightW = 220.0f;
-    float winW   = static_cast<float>(window.getWidth());
-    float winH   = static_cast<float>(window.getHeight());
-
-    ImGui::SetNextWindowPos(ImVec2(leftW, 0), ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(winW - leftW - rightW, winH), ImGuiCond_Always);
+void CanvasPanel::draw(EditorState& state, const LayoutRect& rect) {
+    ImGui::SetNextWindowPos(rect.pos(), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(rect.size(), ImGuiCond_Always);
 
     ImGui::Begin("Canvas", nullptr,
                  ImGuiWindowFlags_NoScrollbar |

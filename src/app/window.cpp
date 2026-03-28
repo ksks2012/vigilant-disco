@@ -33,6 +33,13 @@ Window::Window(const std::string& title, int width, int height)
     glfwMakeContextCurrent(window_);
     glfwSwapInterval(1); // vsync
 
+    // Set minimum window size so the layout never degenerates
+    glfwSetWindowSizeLimits(window_, 800, 500, GLFW_DONT_CARE, GLFW_DONT_CARE);
+
+    // Register resize callback so width_/height_ stay in sync
+    glfwSetWindowUserPointer(window_, this);
+    glfwSetFramebufferSizeCallback(window_, framebufferSizeCallback);
+
     LOG_INFO("Window", "Created " + std::to_string(width_) + "x" +
              std::to_string(height_) + " window: " + title);
 }
@@ -54,4 +61,18 @@ void Window::swapBuffers() {
 
 void Window::pollEvents() {
     glfwPollEvents();
+
+    // Update cached size from the actual framebuffer every frame
+    int w, h;
+    glfwGetFramebufferSize(window_, &w, &h);
+    width_  = w;
+    height_ = h;
+}
+
+void Window::framebufferSizeCallback(GLFWwindow* win, int w, int h) {
+    auto* self = static_cast<Window*>(glfwGetWindowUserPointer(win));
+    if (self) {
+        self->width_  = w;
+        self->height_ = h;
+    }
 }

@@ -20,6 +20,8 @@ public:
     void pollEvents();
 
     GLFWwindow* getHandle() const { return window_; }
+
+    // Current framebuffer size (updated every frame via pollEvents)
     int getWidth()  const { return width_; }
     int getHeight() const { return height_; }
 
@@ -27,6 +29,9 @@ private:
     GLFWwindow* window_ = nullptr;
     int width_;
     int height_;
+
+    // GLFW callback to track window resize
+    static void framebufferSizeCallback(GLFWwindow* win, int w, int h);
 };
 
 #endif // WINDOW_H
