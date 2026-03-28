@@ -137,6 +137,11 @@ void FilePanel::drawImportSection(EditorState& state) {
         ImGui::SetTooltip("Colour distance threshold (0 = exact match only, "
                           "higher = more aggressive)");
     }
+    ImGui::SliderInt("Blob##blob", &state.importBlobSize, 1, 50);
+    if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("Max isolated blob size to remove");
+    }
+
     if (ImGui::Button("Remove BG")) {
         state.undoManager.saveSnapshot(state.beadGrid.cols(),
                                         state.beadGrid.rows(),
@@ -150,11 +155,6 @@ void FilePanel::drawImportSection(EditorState& state) {
         state.textureCache.markDirty();
     }
     ImGui::SameLine();
-    ImGui::SliderInt("Blob##blob", &state.importBlobSize, 1, 50);
-    if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip("Max isolated blob size to remove");
-    }
-
     if (ImGui::Button("Remove Blobs")) {
         state.undoManager.saveSnapshot(state.beadGrid.cols(),
                                         state.beadGrid.rows(),
