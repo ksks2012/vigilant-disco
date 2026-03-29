@@ -9,6 +9,7 @@
 #include "core/progress_tracker.h"
 #include "rendering/grid_renderer.h"
 #include "rendering/bead_texture_cache.h"
+#include "rendering/reference_overlay.h"
 #include "app/canvas.h"
 
 #include <string>
@@ -90,6 +91,11 @@ struct EditorState {
     ProgressTracker progressTracker;
     bool  showProgressOverlay = false;  // draw checkmarks on completed beads
     bool  markDoneValue       = true;   // true = mark done, false = unmark
+
+    // ── Reference overlay (trace image) ───────────────────────────────────────
+    ReferenceOverlay referenceOverlay;
+    bool  showReferenceOverlay = false; // draw the reference image on the canvas
+    float referenceOpacity     = 0.4f;  // 0.0 = invisible, 1.0 = fully opaque
 
     // ── Helpers ───────────────────────────────────────────────────────────────
     // Sync gridCols/gridRows after a load or import that changes grid size

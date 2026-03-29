@@ -1,5 +1,6 @@
 #include "app/tools_panel.h"
 #include "app/editor_state.h"
+#include "app/file_dialog.h"
 
 #include <imgui.h>
 #include <cmath>
@@ -168,6 +169,42 @@ void ToolsPanel::drawToolsSection(EditorState& state) {
     ImGui::SameLine();
     if (ImGui::Button("Mark All")) {
         state.progressTracker.markAll();
+    }
+
+    // ── Reference overlay (trace image) ───────────────────────────────────────
+    ImGui::Separator();
+    ImGui::Text("Reference Image");
+
+    if (state.referenceOverlay.isLoaded()) {
+        ImGui::Checkbox("Show Trace [T]", &state.showReferenceOverlay);
+
+        // Opacity slider shown as percentage (0–100%)
+        int opacityPct = static_cast<int>(state.referenceOpacity * 100.0f + 0.5f);
+        if (ImGui::SliderInt("Opacity##ref", &opacityPct, 0, 100, "%d%%")) {
+            state.referenceOpacity = static_cast<float>(opacityPct) / 100.0f;
+        }
+
+        ImGui::Text("Image: %dx%d", state.referenceOverlay.imageWidth(),
+                    state.referenceOverlay.imageHeight());
+        if (ImGui::Button("Unload##ref")) {
+            state.referenceOverlay.unload();
+            state.showReferenceOverlay = false;
+        }
+    } else {
+        ImGui::TextDisabled("No reference image loaded.");
+        ImGui::TextDisabled("Import an image or load one below.");
+    }
+
+    if (ImGui::Button("Load Ref...")) {
+        char const* filters[8] = {
+            "*.png","*.jpg","*.jpeg","*.bmp","*.tga","*.gif","*.psd","*.hdr"};
+        std::string path = FileDialog::openFile(
+            "Select Reference Image", "", 8, filters, "Image files");
+        if (!path.empty()) {
+            if (state.referenceOverlay.loadFromFile(path)) {
+                state.showReferenceOverlay = true;
+            }
+        }
     }
 }
 

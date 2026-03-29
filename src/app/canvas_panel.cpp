@@ -48,6 +48,11 @@ void CanvasPanel::draw(EditorState& state, const LayoutRect& rect) {
         // Draw the cached texture via ImGui, mapped to world coordinates
         drawCachedTexture(state);
 
+        // Draw reference image overlay (semi-transparent trace layer)
+        if (state.showReferenceOverlay && state.referenceOverlay.isLoaded()) {
+            drawReferenceOverlay(state);
+        }
+
         // Draw pegboard overlay lines
         if (state.showBoardOverlay) {
             drawPegboardOverlay(state);
@@ -79,6 +84,13 @@ void CanvasPanel::handleShortcuts(EditorState& state) {
     // Toggle progress overlay
     if (ImGui::IsKeyPressed(ImGuiKey_P)) {
         state.showProgressOverlay = !state.showProgressOverlay;
+    }
+
+    // Toggle reference (trace) overlay
+    if (ImGui::IsKeyPressed(ImGuiKey_T)) {
+        if (state.referenceOverlay.isLoaded()) {
+            state.showReferenceOverlay = !state.showReferenceOverlay;
+        }
     }
 
     // Save: Ctrl+S
@@ -369,4 +381,32 @@ void CanvasPanel::drawProgressOverlay(EditorState& state) {
             dl->AddPolyline(pts, 3, checkCol, ImDrawFlags_None, checkThick);
         }
     }
+}
+
+// ── Draw reference image overlay (trace layer) ───────────────────────────────
+
+void CanvasPanel::drawReferenceOverlay(EditorState& state) {
+    ImDrawList* dl = state.canvas.drawList();
+    if (!dl) return;
+
+    GLuint texId = state.referenceOverlay.textureId();
+    if (texId == 0) return;
+
+    // The reference image covers the same world rect as the grid: (0,0)→(cols,rows)
+    float cols = static_cast<float>(state.beadGrid.cols());
+    float rows = static_cast<float>(state.beadGrid.rows());
+
+    ImVec2 topLeft  = state.canvas.worldToScreen(0.0f, 0.0f);
+    ImVec2 botRight = state.canvas.worldToScreen(cols, rows);
+
+    // Tint colour: white with user-controlled alpha for opacity
+    uint8_t alpha = static_cast<uint8_t>(state.referenceOpacity * 255.0f);
+    ImU32 tintCol = IM_COL32(255, 255, 255, alpha);
+
+    dl->AddImage(
+        static_cast<ImTextureID>(texId),
+        topLeft, botRight,
+        ImVec2(0.0f, 0.0f),   // UV top-left
+        ImVec2(1.0f, 1.0f),   // UV bottom-right
+        tintCol);
 }

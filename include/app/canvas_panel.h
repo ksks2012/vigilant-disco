@@ -14,6 +14,7 @@ private:
     void handleShortcuts(EditorState& state);
     void handleMouseInteraction(EditorState& state);
     void drawCachedTexture(EditorState& state);
+    void drawReferenceOverlay(EditorState& state);
     void drawPegboardOverlay(EditorState& state);
     void drawProgressOverlay(EditorState& state);
 };
