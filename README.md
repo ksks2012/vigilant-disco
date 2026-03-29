@@ -1,40 +1,68 @@
 # Pin — Perler Bead Simulator
 
 A desktop perler bead (拼豆) simulator built with C++17, OpenGL 3.3 and Dear ImGui.
-Import any image, convert it to a bead pattern, edit with intuitive tools, and export
-your design as a PNG or CSV bead count sheet.
+Import any image, convert it to a bead pattern, edit with intuitive tools, manage
+pegboards, track assembly progress, and export your design as a PNG or CSV bead
+count sheet.
 
-![Basic workflow — importing an image and editing the bead pattern](img/basic.png)
+![UI overview — five-panel layout with reference overlay](img/ui.png)
 
 ## Features
 
+### Image Import & Conversion
 - **Image Import** — Load PNG / JPG / BMP / TGA and auto-convert to a bead grid.
   Two down-sampling algorithms and two colour-matching algorithms are available:
-  - **Sampling**
-    - **Point Sample** — Takes the centre pixel of each source region (fast)
-    - **Area Average** — Averages all pixels in the source region (better detail retention)
-  - **Color Match**
-    - **Euclidean RGB** — Standard squared distance in RGB space
-    - **Redmean** — Perceptually weighted distance that accounts for human colour sensitivity
-- **Native File Dialogs** — System-native Open / Save dialogs for importing images,
-  loading / saving projects, and exporting (via tinyfiledialogs)
-- **Editing Tools** — Brush (size 1×1 / 3×3 / 5×5), Flood Fill, Eyedropper
+  - **Sampling** — Point Sample (centre pixel) or Area Average (better detail)
+  - **Color Match** — Euclidean RGB or Redmean (perceptually weighted)
+- **Background Removal** — Edge flood-fill removes the background from imported images.
+  Adjustable colour-distance tolerance adapts to gradual background gradients.
+  A separate "Remove Blobs" pass cleans up isolated small regions left behind
+- **Reference Overlay (Trace)** — After importing an image it is automatically loaded
+  as a semi-transparent layer on top of the bead canvas. Adjust opacity (0–100%)
+  or manually load any image as a reference. Toggle with `[T]`
+
+### Editing
+- **Tools** — Brush (size 1×1 / 3×3 / 5×5), Flood Fill, Eyedropper, Mark Done
 - **Bresenham Brush Interpolation** — Fast mouse strokes are gap-free thanks to
   line interpolation between frames
 - **Multi-Brand Palette** — Switch between bead brands at runtime via a drop-down:
   - **Perler** (42 colours), **Hama** (36 colours), **Artkal** (43 colours), **Nabbi** (27 colours)
   - Palette files live in `etc/palettes/` (JSON); add your own brand by dropping in a new file
-- **Background Removal** — Edge flood-fill removes the background from imported images.
-  Adjustable colour-distance tolerance adapts to gradual background gradients.
-  A separate "Remove Blobs" pass cleans up isolated small regions left behind
 - **Undo / Redo** — Delta-based history (up to 100 steps) that stores only the cells
   that changed, keeping memory usage minimal even for large grids. Brush strokes are
   grouped as a single undo unit
-- **Project Save / Load** — `.pin` JSON format preserving grid data and palette
+
+### Pegboard Management
+- **Automatic Tiling** — Grid is automatically divided into pegboard-sized tiles
+  (29×29 or 57×57). Navigate between boards via prev/next buttons, a drop-down,
+  or a clickable mini-map
+- **Board Overlay** — Yellow grid lines show pegboard boundaries on the canvas;
+  the selected board is highlighted with a thicker orange outline
+- **Focus Board** — Zoom and centre the canvas view on any specific board
+
+### Progress Tracking
+- **Mark Done Tool** `[M]` — Click or drag to mark beads as physically placed;
+  supports brush sizes for bulk marking
+- **Visual Overlay** `[P]` — Completed beads show a semi-transparent green tint
+  with a ✓ checkmark on the canvas
+- **Progress Bar** — Real-time done/total percentage in the Tools panel and
+  per-board progress in the Pegboard panel
+- **Persistent** — Progress data is saved and restored with `.pin` project files
+
+### Project & Export
+- **Project Save / Load** — `.pin` JSON format preserving grid data, palette, and
+  progress tracking state
 - **Export** — PNG (Flat grid or 3D bead style) and CSV bead count report
-- **Zoom & Pan** — Scroll to zoom, right / middle-click drag to pan
+- **Bead Statistics** — Dedicated panel showing colour usage counts, percentages,
+  and total bead summary
+- **Native File Dialogs** — System-native Open / Save dialogs via tinyfiledialogs
+
+### Rendering & Layout
 - **GPU-Cached Rendering** — Bead grid is rendered to an off-screen OpenGL texture and
   only rebuilt when data changes, keeping idle / zoom / pan at minimal cost
+- **Zoom & Pan** — Scroll to zoom, right / middle-click drag to pan
+- **Dynamic Layout** — Five-panel responsive layout that adapts proportionally to
+  window resizing (minimum 800×500). Side panels clamp within comfortable ranges
 
 ![Export preview — PNG with 3D bead style](img/export.png "Export preview — PNG with 3D bead style")
 
@@ -55,6 +83,9 @@ your design as a PNG or CSV bead count sheet.
 | `B` | Brush tool |
 | `F` | Flood Fill tool |
 | `I` | Eyedropper tool |
+| `M` | Mark Done tool (progress tracking) |
+| `P` | Toggle progress overlay |
+| `T` | Toggle reference (trace) overlay |
 | `Ctrl+Z` | Undo |
 | `Ctrl+Y` / `Ctrl+Shift+Z` | Redo |
 | `Ctrl+S` | Save project |
@@ -101,14 +132,34 @@ cmake --build build -j$(nproc)
 pin/
 ├── src/
 │   ├── main.cpp                  # Entry point & main loop
-│   ├── app/                      # Window, Canvas, UI panels
-│   ├── core/                     # BeadGrid, Palette, Undo, Import/Export
-│   ├── rendering/                # GridRenderer, BeadTextureCache
+│   ├── app/                      # Window, Canvas, Layout, UI panels
+│   │   ├── canvas.cpp            #   Zoom/pan canvas widget
+│   │   ├── canvas_panel.cpp      #   Centre panel (bead canvas + overlays)
+│   │   ├── tools_panel.cpp       #   Left-upper (tools, palette, progress, reference)
+│   │   ├── file_panel.cpp        #   Left-lower (project, import, export, help)
+│   │   ├── pegboard_panel.cpp    #   Right-upper (pegboard nav, mini-map)
+│   │   ├── stats_panel.cpp       #   Right-lower (bead statistics)
+│   │   ├── config.cpp            #   JSON config loader
+│   │   ├── file_dialog.cpp       #   Native file dialog wrapper
+│   │   └── window.cpp            #   GLFW window wrapper
+│   ├── core/                     # Domain logic
+│   │   ├── bead_grid.cpp         #   Grid data model + tools
+│   │   ├── palette.cpp           #   Colour palette
+│   │   ├── undo_manager.cpp      #   Delta-based undo/redo
+│   │   ├── image_importer.cpp    #   Image → grid conversion
+│   │   ├── exporter.cpp          #   PNG / CSV export
+│   │   ├── project_file.cpp      #   .pin save/load
+│   │   ├── pegboard_manager.cpp  #   Board tiling logic
+│   │   └── progress_tracker.cpp  #   Assembly progress tracking
+│   ├── rendering/                # GPU rendering
+│   │   ├── bead_texture_cache.cpp#   FBO-cached bead texture
+│   │   ├── grid_renderer.cpp     #   Grid line renderer
+│   │   └── reference_overlay.cpp #   Reference image GPU texture
 │   └── logging/                  # spdlog logger wrapper
 ├── include/                      # Header files (mirrors src/)
+│   └── app/layout.h              #   Dynamic 5-panel layout manager
 ├── etc/
 │   ├── config.json               # Window size, log level
-│   ├── palette.json              # Legacy fallback palette
 │   └── palettes/                 # Brand palette files (auto-discovered)
 │       ├── perler.json
 │       ├── hama.json
@@ -152,8 +203,7 @@ auto-discovers all `.json` files in this directory at startup.
   reserved for "Empty" (auto-inserted). You can freely add, remove or reorder colours.
 
 To add a new brand, simply drop a `.json` file into `etc/palettes/` — no code changes
-required. The legacy `etc/palette.json` is used as fallback when the `palettes/`
-directory is empty.
+required.
 
 ## Image Credits
 
