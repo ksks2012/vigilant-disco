@@ -3,6 +3,7 @@
 
 #include <imgui.h>
 #include <cmath>
+#include <cstdio>
 #include <algorithm>
 
 // ── Main draw ─────────────────────────────────────────────────────────────────
@@ -50,13 +51,24 @@ void ToolsPanel::drawToolsSection(EditorState& state) {
     toolButton("Fill [F]", Tool::FloodFill);
     ImGui::SameLine();
     toolButton("Eyedrop [I]", Tool::Eyedropper);
+    ImGui::SameLine();
+    toolButton("Mark [M]", Tool::MarkDone);
 
-    // Brush size (only relevant for Brush tool)
-    if (state.currentTool == Tool::Brush) {
+    // Brush size (only relevant for Brush and MarkDone tools)
+    if (state.currentTool == Tool::Brush || state.currentTool == Tool::MarkDone) {
         ImGui::SliderInt("Brush Size", &state.brushSize, 1, 3);
         const char* sizeLabels[] = { "", "1x1", "3x3", "5x5" };
         ImGui::SameLine();
         ImGui::Text("(%s)", sizeLabels[state.brushSize]);
+    }
+
+    // Mark mode toggle (only for MarkDone tool)
+    if (state.currentTool == Tool::MarkDone) {
+        ImGui::Checkbox("Mark as Done", &state.markDoneValue);
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Checked = mark beads as done; "
+                              "Unchecked = unmark beads");
+        }
     }
 
     // Undo / Redo buttons
@@ -102,6 +114,7 @@ void ToolsPanel::drawToolsSection(EditorState& state) {
     sizeChanged |= ImGui::SliderInt("Rows",    &state.gridRows, 1, 256);
     if (sizeChanged) {
         state.beadGrid.resize(state.gridCols, state.gridRows);
+        state.progressTracker.resize(state.gridCols, state.gridRows);
         state.undoManager.clear();
         state.textureCache.markDirty();
         state.pegboardDirty = true;
@@ -118,6 +131,43 @@ void ToolsPanel::drawToolsSection(EditorState& state) {
     ImGui::SameLine();
     if (ImGui::Button("Reset View")) {
         state.viewCentred = false;
+    }
+
+    // ── Progress tracking ─────────────────────────────────────────────────────
+    ImGui::Separator();
+    ImGui::Text("Progress");
+    ImGui::Checkbox("Show Overlay [P]", &state.showProgressOverlay);
+
+    // Count only non-empty beads for progress calculation
+    {
+        const auto& cells = state.beadGrid.cells();
+        const auto& tracker = state.progressTracker;
+        int totalBeads = 0;
+        int doneBeads  = 0;
+        for (int r = 0; r < state.beadGrid.rows(); ++r) {
+            for (int c = 0; c < state.beadGrid.cols(); ++c) {
+                if (state.beadGrid.get(c, r) != 0) {
+                    ++totalBeads;
+                    if (tracker.isDone(c, r)) ++doneBeads;
+                }
+            }
+        }
+        float pct = (totalBeads > 0)
+            ? static_cast<float>(doneBeads) / totalBeads
+            : 0.0f;
+
+        char overlay[64];
+        std::snprintf(overlay, sizeof(overlay), "%d / %d (%.1f%%)",
+                      doneBeads, totalBeads, pct * 100.0f);
+        ImGui::ProgressBar(pct, ImVec2(-1, 0), overlay);
+    }
+
+    if (ImGui::Button("Clear Marks")) {
+        state.progressTracker.clearAll();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Mark All")) {
+        state.progressTracker.markAll();
     }
 }
 

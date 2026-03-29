@@ -15,6 +15,7 @@ private:
     void handleMouseInteraction(EditorState& state);
     void drawCachedTexture(EditorState& state);
     void drawPegboardOverlay(EditorState& state);
+    void drawProgressOverlay(EditorState& state);
 };
 
 #endif // CANVAS_PANEL_H

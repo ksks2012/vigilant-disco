@@ -7,13 +7,14 @@
 
 using json = nlohmann::json;
 
-static constexpr int kFileVersion = 1;
+static constexpr int kFileVersion = 2;
 
 // ── Save ──────────────────────────────────────────────────────────────────────
 
 ProjectFileResult ProjectFile::save(const std::string& path,
                                     const BeadGrid& grid,
-                                    const Palette& palette) {
+                                    const Palette& palette,
+                                    const ProgressTracker& progress) {
     ProjectFileResult result;
 
     json j;
@@ -48,6 +49,23 @@ ProjectFileResult ProjectFile::save(const std::string& path,
     }
     j["palette"] = jPalette;
 
+    // ── Progress tracking ─────────────────────────────────────────────────────
+    {
+        const auto& pCells = progress.cells();
+        bool hasProgress = false;
+        for (uint8_t c : pCells) {
+            if (c != 0) { hasProgress = true; break; }
+        }
+        // Only write if there is any progress to save (keeps v1 compat)
+        if (hasProgress) {
+            json jProgress = json::array();
+            for (uint8_t c : pCells) {
+                jProgress.push_back(static_cast<int>(c));
+            }
+            j["progress"] = jProgress;
+        }
+    }
+
     // ── Write to file ─────────────────────────────────────────────────────────
     std::ofstream file(path);
     if (!file.is_open()) {
@@ -74,7 +92,8 @@ ProjectFileResult ProjectFile::save(const std::string& path,
 
 ProjectFileResult ProjectFile::load(const std::string& path,
                                     BeadGrid& grid,
-                                    Palette& palette) {
+                                    Palette& palette,
+                                    ProgressTracker& progress) {
     ProjectFileResult result;
 
     std::ifstream file(path);
@@ -177,6 +196,20 @@ ProjectFileResult ProjectFile::load(const std::string& path,
     // ── Apply ─────────────────────────────────────────────────────────────────
     palette.setEntries(std::move(entries));
     grid.restoreFrom(cols, rows, cells);
+
+    // ── Progress (optional — absent in v1 files) ──────────────────────────────
+    progress.resize(cols, rows);
+    if (j.contains("progress") && j["progress"].is_array()) {
+        const auto& jProg = j["progress"];
+        size_t expectedSize = static_cast<size_t>(cols) * rows;
+        if (jProg.size() == expectedSize) {
+            std::vector<uint8_t> pCells(expectedSize, 0);
+            for (size_t i = 0; i < expectedSize; ++i) {
+                pCells[i] = (jProg[i].get<int>() != 0) ? 1 : 0;
+            }
+            progress.restoreFrom(cols, rows, pCells);
+        }
+    }
 
     result.success = true;
     result.message = "Loaded " + std::to_string(cols) + "x" +

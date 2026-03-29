@@ -3,6 +3,7 @@
 
 #include "core/bead_grid.h"
 #include "core/palette.h"
+#include "core/progress_tracker.h"
 #include <string>
 
 // Result of a project file operation.
@@ -24,14 +25,16 @@ public:
     // Save the current grid and palette to a .pin file.
     static ProjectFileResult save(const std::string& path,
                                   const BeadGrid& grid,
-                                  const Palette& palette);
+                                  const Palette& palette,
+                                  const ProgressTracker& progress);
 
     // Load a .pin file into the grid and palette.
     // On success the grid will be resized and filled, and the palette
     // will be replaced with the one stored in the file.
     static ProjectFileResult load(const std::string& path,
                                   BeadGrid& grid,
-                                  Palette& palette);
+                                  Palette& palette,
+                                  ProgressTracker& progress);
 };
 
 #endif // PROJECT_FILE_H

@@ -110,6 +110,7 @@ int main(int /*argc*/, char* /*argv*/[]) {
         state.palette.loadFromFile("etc/palette.json");
     }
     state.beadGrid.resize(state.gridCols, state.gridRows);
+    state.progressTracker.resize(state.gridCols, state.gridRows);
 
     LOG_INFO("Main", "Perler Bead Simulator started");
 

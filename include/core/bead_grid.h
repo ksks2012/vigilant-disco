@@ -11,7 +11,8 @@
 enum class Tool {
     Brush,       // Paint individual beads (size 1–3)
     Eyedropper,  // Pick colour from the grid
-    FloodFill    // Fill connected region with the selected colour
+    FloodFill,   // Fill connected region with the selected colour
+    MarkDone     // Toggle progress-tracking marks (completed beads)
 };
 
 // Data model for the perler bead grid.

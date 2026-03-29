@@ -53,6 +53,11 @@ void CanvasPanel::draw(EditorState& state, const LayoutRect& rect) {
             drawPegboardOverlay(state);
         }
 
+        // Draw progress overlay (checkmarks on completed beads)
+        if (state.showProgressOverlay) {
+            drawProgressOverlay(state);
+        }
+
         state.canvas.end();
     }
 
@@ -69,6 +74,12 @@ void CanvasPanel::handleShortcuts(EditorState& state) {
     if (ImGui::IsKeyPressed(ImGuiKey_B)) state.currentTool = Tool::Brush;
     if (ImGui::IsKeyPressed(ImGuiKey_F)) state.currentTool = Tool::FloodFill;
     if (ImGui::IsKeyPressed(ImGuiKey_I)) state.currentTool = Tool::Eyedropper;
+    if (ImGui::IsKeyPressed(ImGuiKey_M)) state.currentTool = Tool::MarkDone;
+
+    // Toggle progress overlay
+    if (ImGui::IsKeyPressed(ImGuiKey_P)) {
+        state.showProgressOverlay = !state.showProgressOverlay;
+    }
 
     // Save: Ctrl+S
     if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_S)) {
@@ -79,7 +90,8 @@ void CanvasPanel::handleShortcuts(EditorState& state) {
             std::strncpy(state.projectPath, path.c_str(), sizeof(state.projectPath) - 1);
             state.projectPath[sizeof(state.projectPath) - 1] = '\0';
             auto result = ProjectFile::save(state.projectPath, state.beadGrid,
-                                             state.palette);
+                                             state.palette,
+                                             state.progressTracker);
             state.projectStatus = result.message;
         }
     }
@@ -93,7 +105,8 @@ void CanvasPanel::handleShortcuts(EditorState& state) {
             std::strncpy(state.projectPath, path.c_str(), sizeof(state.projectPath) - 1);
             state.projectPath[sizeof(state.projectPath) - 1] = '\0';
             auto result = ProjectFile::load(state.projectPath, state.beadGrid,
-                                             state.palette);
+                                             state.palette,
+                                             state.progressTracker);
             state.projectStatus = result.message;
             if (result.success) {
                 state.syncGridDims();
@@ -204,6 +217,13 @@ void CanvasPanel::handleMouseInteraction(EditorState& state) {
                     state.currentTool = Tool::Brush;
                 }
                 break;
+
+            case Tool::MarkDone:
+                // Mark/unmark beads as completed using the brush size
+                state.progressTracker.markBrush(col, row,
+                                                 state.markDoneValue,
+                                                 state.brushSize);
+                break;
             }
         }
     }
@@ -291,5 +311,62 @@ void CanvasPanel::drawPegboardOverlay(EditorState& state) {
         std::string label = PegboardManager::tileLabel(t);
         ImVec2 textPos = ImVec2(tl.x + 4.0f, tl.y + 2.0f);
         dl->AddText(textPos, currentCol, label.c_str());
+    }
+}
+
+// ── Draw progress overlay (checkmarks on completed beads) ─────────────────────
+
+void CanvasPanel::drawProgressOverlay(EditorState& state) {
+    ImDrawList* dl = state.canvas.drawList();
+    if (!dl) return;
+
+    const auto& tracker = state.progressTracker;
+    int cols = state.beadGrid.cols();
+    int rows = state.beadGrid.rows();
+
+    // Only draw marks that are visible on screen to save draw calls.
+    // Compute the visible world-coordinate bounding box.
+    float scale = state.canvas.scale();
+    if (scale < 2.0f) return; // too zoomed out to see marks
+
+    // Semi-transparent green overlay + checkmark colour
+    ImU32 overlayCol  = IM_COL32(0, 200, 80, 60);
+    ImU32 checkCol    = IM_COL32(0, 200, 80, 220);
+    float checkThick  = std::max(1.0f, scale * 0.08f);
+
+    for (int row = 0; row < rows; ++row) {
+        for (int col = 0; col < cols; ++col) {
+            if (!tracker.isDone(col, row)) continue;
+
+            // Skip empty beads — only track non-empty cells
+            if (state.beadGrid.get(col, row) == 0) continue;
+
+            float wx = static_cast<float>(col);
+            float wy = static_cast<float>(row);
+            ImVec2 tl = state.canvas.worldToScreen(wx, wy);
+            ImVec2 br = state.canvas.worldToScreen(wx + 1.0f, wy + 1.0f);
+
+            // Quick frustum cull
+            if (br.x < 0 || br.y < 0) continue;
+
+            // Draw a semi-transparent green tint over the bead
+            dl->AddRectFilled(tl, br, overlayCol);
+
+            // Draw a small checkmark (✓) inside the cell
+            float cw = br.x - tl.x;
+            float ch = br.y - tl.y;
+            float cx = tl.x + cw * 0.5f;
+            float cy = tl.y + ch * 0.5f;
+
+            // Checkmark: short stroke from bottom-left to bottom-centre,
+            // then long stroke from bottom-centre to top-right.
+            ImVec2 pts[3] = {
+                ImVec2(cx - cw * 0.22f, cy + ch * 0.02f),  // left arm start
+                ImVec2(cx - cw * 0.05f, cy + ch * 0.20f),  // bottom vertex
+                ImVec2(cx + cw * 0.25f, cy - ch * 0.22f),  // right arm end
+            };
+
+            dl->AddPolyline(pts, 3, checkCol, ImDrawFlags_None, checkThick);
+        }
     }
 }

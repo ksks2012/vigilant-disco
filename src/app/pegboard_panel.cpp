@@ -126,6 +126,19 @@ void PegboardPanel::drawNavigationSection(EditorState& state) {
         int area  = t.tileCols() * t.tileRows();
         ImGui::Text("Beads: %d / %d  (%.0f%%)", beads, area,
                     area > 0 ? 100.0f * beads / area : 0.0f);
+
+        // Per-board progress
+        int done = state.progressTracker.doneCountInRect(
+            t.startCol, t.startRow, t.endCol, t.endRow);
+        if (beads > 0) {
+            float pct = static_cast<float>(done) / beads;
+            char buf[64];
+            std::snprintf(buf, sizeof(buf), "%d / %d (%.0f%%)", done, beads,
+                          pct * 100.0f);
+            ImGui::Text("Progress:");
+            ImGui::SameLine();
+            ImGui::ProgressBar(pct, ImVec2(-1, 0), buf);
+        }
     }
 }
 

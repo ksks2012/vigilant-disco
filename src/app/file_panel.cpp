@@ -27,6 +27,7 @@ void FilePanel::draw(EditorState& state, const LayoutRect& rect) {
     ImGui::Separator();
     ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "Shortcuts:");
     ImGui::BulletText("[B] Brush  [F] Fill  [I] Eyedrop");
+    ImGui::BulletText("[M] Mark Done  [P] Progress");
     ImGui::BulletText("[Ctrl+Z] Undo  [Ctrl+Y] Redo");
     ImGui::BulletText("[Ctrl+S] Save  [Ctrl+O] Load");
     ImGui::BulletText("Scroll: Zoom | R/M-drag: Pan");
@@ -52,13 +53,15 @@ void FilePanel::drawProjectSection(EditorState& state) {
 
     if (ImGui::Button("Save [Ctrl+S]")) {
         auto result = ProjectFile::save(state.projectPath, state.beadGrid,
-                                         state.palette);
+                                         state.palette,
+                                         state.progressTracker);
         state.projectStatus = result.message;
     }
     ImGui::SameLine();
     if (ImGui::Button("Load [Ctrl+O]")) {
         auto result = ProjectFile::load(state.projectPath, state.beadGrid,
-                                         state.palette);
+                                         state.palette,
+                                         state.progressTracker);
         state.projectStatus = result.message;
         if (result.success) {
             state.syncGridDims();

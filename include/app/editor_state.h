@@ -6,6 +6,7 @@
 #include "core/undo_manager.h"
 #include "core/image_importer.h"
 #include "core/pegboard_manager.h"
+#include "core/progress_tracker.h"
 #include "rendering/grid_renderer.h"
 #include "rendering/bead_texture_cache.h"
 #include "app/canvas.h"
@@ -85,12 +86,22 @@ struct EditorState {
     float focusBoardWidth     = 29.0f;
     float focusBoardHeight    = 29.0f;
 
+    // ── Progress tracking ─────────────────────────────────────────────────────
+    ProgressTracker progressTracker;
+    bool  showProgressOverlay = false;  // draw checkmarks on completed beads
+    bool  markDoneValue       = true;   // true = mark done, false = unmark
+
     // ── Helpers ───────────────────────────────────────────────────────────────
     // Sync gridCols/gridRows after a load or import that changes grid size
     void syncGridDims() {
         gridCols = beadGrid.cols();
         gridRows = beadGrid.rows();
         pegboardDirty = true;
+        // Keep progress tracker in sync with grid dimensions
+        if (progressTracker.cols() != gridCols ||
+            progressTracker.rows() != gridRows) {
+            progressTracker.resize(gridCols, gridRows);
+        }
     }
 };
 
